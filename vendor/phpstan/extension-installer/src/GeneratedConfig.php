@@ -12,7 +12,7 @@ final class GeneratedConfig
 	public const EXTENSIONS = array (
   'jangregor/phpstan-prophecy' => 
   array (
-    'install_path' => '/home/bogdan/PhpstormProjects/lw3/course-microservice-slim/vendor/jangregor/phpstan-prophecy',
+    'install_path' => '/home/bogdan/PhpstormProjects/lw3/course-microservice/vendor/jangregor/phpstan-prophecy',
     'relative_install_path' => '../../../jangregor/phpstan-prophecy',
     'extra' => 
     array (
