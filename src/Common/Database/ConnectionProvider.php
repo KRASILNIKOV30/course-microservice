@@ -10,21 +10,11 @@ final class ConnectionProvider
     {
         static $connection = null;
         if ($connection === null) {
-            // TODO: Добавить поддержку .env, чтобы упростить запуск примера в Windows
-            $dsn = self::getEnvString('APP_DATABASE_DSN');
-            $user = self::getEnvString('APP_DATABASE_USER');
-            $password = self::getEnvString('APP_DATABASE_PASSWORD');
+            $dsn = 'mysql:dbname=course;host=127.0.0.1';
+            $user = 'root';
+            $password = 'Zakunbor7839';
             $connection = new Connection($dsn, $user, $password);
         }
         return $connection;
-    }
-
-    private static function getEnvString(string $name): string
-    {
-        $value = getenv($name);
-        if ($value === false) {
-            throw new \RuntimeException("Environment variable '$name' not set");
-        }
-        return (string)$value;
     }
 }

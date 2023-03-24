@@ -1,7 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Common\Database;
+
+use Closure;
+use Throwable;
 
 class Synchronization
 {
@@ -12,24 +16,20 @@ class Synchronization
         $this->connection = $connection;
     }
 
+
     /**
-     * Метод выполняет переданную функцию внутри открытой транзакции, в конце вызывая COMMIT либо ROLLBACK.
-     *
-     * @param \Closure $action
-     * @return mixed|void
-     * @throws null
+     * @param Closure $action
+     * @return mixed
+     * @throws Throwable
      */
-    public function doWithTransaction(\Closure $action)
+    public function doWithTransaction(Closure $action)
     {
         $this->connection->beginTransaction();
-        try
-        {
+        try {
             $result = $action();
             $this->connection->commit();
             return $result;
-        }
-        catch (\Throwable $exception)
-        {
+        } catch (Throwable $exception) {
             $this->connection->rollBack();
             throw $exception;
         }
