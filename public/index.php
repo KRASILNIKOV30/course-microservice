@@ -14,6 +14,6 @@ $app = AppFactory::create();
 $app->addRoutingMiddleware();
 $errorMiddleware = $app->addErrorMiddleware(!$isProduction, true, true);
 
-//$app->get('/course/list', )
+$app->post('/course', \App\Controller\CourseApiController::class . ':saveCourse');
 
 $app->run();

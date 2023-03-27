@@ -1,7 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Common\Database;
+
+use PDOStatement;
+use RuntimeException;
 
 final class Connection
 {
@@ -29,13 +33,12 @@ final class Connection
      *
      * @param string $sql
      * @param array $params
-     * @return \PDOStatement
+     * @return PDOStatement
      */
-    public function execute(string $sql, array $params = []): \PDOStatement
+    public function execute(string $sql, array $params = []): PDOStatement
     {
         $statement = $this->getConnection()->prepare($sql);
         $statement->execute($params);
-
         return $statement;
     }
 
@@ -44,20 +47,19 @@ final class Connection
      * Подстановка параметров даёт устойчивость к SQL Injections.
      *
      * @param string $sql
-     * @return \PDOStatement
+     * @return PDOStatement
      */
-    public function prepare(string $sql): \PDOStatement
+    public function prepare(string $sql): PDOStatement
     {
         return $this->getConnection()->prepare($sql);
     }
 
     public function getLastInsertId(): int
     {
-        if ($lastInsertId = $this->getConnection()->lastInsertId())
-        {
+        if ($lastInsertId = $this->getConnection()->lastInsertId()) {
             return (int)$lastInsertId;
         }
-        return throw new \RuntimeException("Failed to get last insert id");
+        return throw new RuntimeException("Failed to get last insert id");
     }
 
     public function beginTransaction(): void
@@ -84,8 +86,7 @@ final class Connection
      */
     private function getConnection(): \PDO
     {
-        if ($this->handle === null)
-        {
+        if ($this->handle === null) {
             $this->handle = new \PDO($this->dsn, $this->user, $this->password);
             $this->handle->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         }
