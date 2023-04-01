@@ -2,12 +2,10 @@
 
 namespace App\Controller;
 
-use App\Common\Database\ConnectionProvider;
-use App\Common\Database\Synchronization;
+use _PHPStan_e0e4f009c\Nette\Utils\JsonException;
 use App\Controller\Request\CourseApiRequestParser;
 use App\Controller\Request\RequestValidationException;
 use App\Model\Service\ServiceProvider;
-use JsonException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
@@ -17,8 +15,6 @@ class CourseApiController
 {
     private const HTTP_STATUS_OK = 200;
     private const HTTP_STATUS_BAD_REQUEST = 400;
-    private const HTTP_STATUS_CONFLICT = 409;
-
 
     /**
      * @param ServerRequestInterface $request
@@ -29,16 +25,22 @@ class CourseApiController
     public function saveCourse(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         try {
-            $params = CourseApiRequestParser::parseSaveCourseArticleParams((array)$request->getParsedBody());
+            $params = CourseApiRequestParser::parseSaveCourseParams((array)$request->getParsedBody());
         } catch (RequestValidationException $exception) {
             return $this->badRequest($response, $exception->getFieldErrors());
         }
+        ServiceProvider::getInstance()->getCourseService()->saveCourse($params);
+        return $this->success($response, []);
+    }
 
-        $synchronization = new Synchronization(ConnectionProvider::getConnection());
-        $synchronization->doWithTransaction(function () use ($params) {
-            ServiceProvider::getInstance()->getCourseRepository()->save($params);
-        });
-
+    public function saveEnrollment(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        try {
+            $params = CourseApiRequestParser::parseSaveEnrollmentParams((array)$request->getParsedBody());
+        } catch (RequestValidationException $exception) {
+            return $this->badRequest($response, $exception->getFieldErrors());
+        }
+        ServiceProvider::getInstance()->getCourseService()->saveEnrollment($params);
         return $this->success($response, []);
     }
 

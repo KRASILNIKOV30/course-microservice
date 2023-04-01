@@ -15,18 +15,14 @@ class EnrollmentRepository
         $this->connection = $connection;
     }
 
-    public function save(SaveEnrollmentParams $saveEnrollmentParams): bool
+    public function save(SaveEnrollmentParams $saveEnrollmentParams): void
     {
         $enrollmentId = $saveEnrollmentParams->getEnrollmentId();
-        $courseId = $saveEnrollmentParams->getEnrollmentId();
-        if (!$this->insertEnrollment($enrollmentId, $courseId)) {
-            return false;
-        }
-
-        return true;
+        $courseId = $saveEnrollmentParams->getCourseId();
+        $this->insertEnrollment($enrollmentId, $courseId);
     }
 
-    private function insertEnrollment(string $enrollmentId, string $courseId): bool
+    private function insertEnrollment(string $enrollmentId, string $courseId): void
     {
         $query = <<<SQL
             INSERT INTO course_enrollment
@@ -35,12 +31,6 @@ class EnrollmentRepository
                 (?, ?)
             SQL;
         $params = [$enrollmentId, $courseId];
-        try {
-            $this->connection->execute($query, $params);
-        } catch (PDOException $e) {
-            return false;
-        }
-
-        return true;
+        $this->connection->execute($query, $params);
     }
 }

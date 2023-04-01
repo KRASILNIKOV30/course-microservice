@@ -5,17 +5,26 @@ declare(strict_types=1);
 namespace App\Controller\Request;
 
 use App\Model\Data\SaveCourseParams;
+use App\Model\Data\SaveEnrollmentParams;
 
 class CourseApiRequestParser
 {
     private const MAX_ID_LENGTH = 36;
 
-    public static function parseSaveCourseArticleParams(array $parameters): SaveCourseParams
+    public static function parseSaveCourseParams(array $parameters): SaveCourseParams
     {
         return new SaveCourseParams(
             self::parseString($parameters, 'courseId', self::MAX_ID_LENGTH),
             self::parseStringArray($parameters, 'moduleIds', self::MAX_ID_LENGTH),
             self::parseStringArray($parameters, 'requiredModuleIds', self::MAX_ID_LENGTH)
+        );
+    }
+
+    public static function parseSaveEnrollmentParams(array $parameters): SaveEnrollmentParams
+    {
+        return new SaveEnrollmentParams(
+            self::parseString($parameters, 'enrollmentId', self::MAX_ID_LENGTH),
+            self::parseString($parameters, 'courseId', self::MAX_ID_LENGTH)
         );
     }
 

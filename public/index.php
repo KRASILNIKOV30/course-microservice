@@ -15,5 +15,6 @@ $app->addRoutingMiddleware();
 $errorMiddleware = $app->addErrorMiddleware(!$isProduction, true, true);
 
 $app->post('/course', \App\Controller\CourseApiController::class . ':saveCourse');
+$app->post('/enrollment', \App\Controller\CourseApiController::class . ':saveEnrollment');
 
 $app->run();
