@@ -63,4 +63,18 @@ class CourseModuleRepository
         }
         return (int)$value['duration'];
     }
+
+    public function setProgress(string $enrollmentId, string $moduleId, int $progress): void
+    {
+        $query = <<<SQL
+            UPDATE course_module_status
+            SET
+                progress = $progress
+            WHERE enrollmentId = ?
+                AND moduleId = ?
+            SQL;
+
+        $params = [$enrollmentId, $moduleId];
+        $this->connection->execute($query, $params);
+    }
 }
