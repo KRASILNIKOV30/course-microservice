@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Request;
 
+use App\Model\Data\GetCourseStatusParams;
 use App\Model\Data\SaveCourseParams;
 use App\Model\Data\SaveEnrollmentParams;
 
@@ -23,6 +24,14 @@ class CourseApiRequestParser
     public static function parseSaveEnrollmentParams(array $parameters): SaveEnrollmentParams
     {
         return new SaveEnrollmentParams(
+            self::parseString($parameters, 'enrollmentId', self::MAX_ID_LENGTH),
+            self::parseString($parameters, 'courseId', self::MAX_ID_LENGTH)
+        );
+    }
+
+    public static function parseGetCourseStatusParams(array $parameters): GetCourseStatusParams
+    {
+        return new GetCourseStatusParams(
             self::parseString($parameters, 'enrollmentId', self::MAX_ID_LENGTH),
             self::parseString($parameters, 'courseId', self::MAX_ID_LENGTH)
         );

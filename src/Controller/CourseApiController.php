@@ -5,6 +5,7 @@ namespace App\Controller;
 use _PHPStan_e0e4f009c\Nette\Utils\JsonException;
 use App\Controller\Request\CourseApiRequestParser;
 use App\Controller\Request\RequestValidationException;
+use App\Controller\Response\CourseApiResponseFormatter;
 use App\Model\Service\ServiceProvider;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -42,6 +43,17 @@ class CourseApiController
         }
         ServiceProvider::getInstance()->getCourseService()->saveEnrollment($params);
         return $this->success($response, []);
+    }
+
+    public function getCourseStatus(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        try {
+            $params = CourseApiRequestParser::parseGetCourseStatusParams($request->getQueryParams());
+        } catch (RequestValidationException $exception) {
+            return $this->badRequest($response, $exception->getFieldErrors());
+        }
+        $courseStatus = ServiceProvider::getInstance()->getCourseService()->getCourseStatus($params);
+        return $this->success($response, CourseApiResponseFormatter::formatCourseStatus($courseStatus));
     }
 
     private function success(ResponseInterface $response, array $responseData): ResponseInterface

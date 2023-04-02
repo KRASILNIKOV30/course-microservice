@@ -29,6 +29,9 @@ class CourseStatusData
         return $this->enrollmentId;
     }
 
+    /**
+     * @return ModuleStatusData[]
+     */
     public function getModules(): array
     {
         return $this->modules;
