@@ -22,6 +22,20 @@ class EnrollmentRepository
         $this->insertEnrollment($enrollmentId, $courseId);
     }
 
+    public function getCourseIdByEnrollmentId(string $enrollmentId): string
+    {
+        $query = <<<SQL
+            SELECT
+                course_id
+            FROM course_enrollment
+            WHERE enrollment_id = ?
+            SQL;
+
+        $params = [$enrollmentId];
+        $stmt = $this->connection->execute($query, $params);
+        return (string)$stmt->fetch(\PDO::FETCH_ASSOC)['course_id'];
+    }
+
     private function insertEnrollment(string $enrollmentId, string $courseId): void
     {
         $query = <<<SQL
