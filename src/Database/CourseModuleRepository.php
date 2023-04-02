@@ -70,8 +70,22 @@ class CourseModuleRepository
             UPDATE course_module_status
             SET
                 progress = $progress
-            WHERE enrollmentId = ?
-                AND moduleId = ?
+            WHERE enrollment_id = ?
+                AND module_id = ?
+            SQL;
+
+        $params = [$enrollmentId, $moduleId];
+        $this->connection->execute($query, $params);
+    }
+
+    public function increaseDuration(string $enrollmentId, string $moduleId, int $duration): void
+    {
+        $query = <<<SQL
+            UPDATE course_module_status
+            SET
+                duration = duration + $duration
+            WHERE enrollment_id = ?
+                AND module_id = ?
             SQL;
 
         $params = [$enrollmentId, $moduleId];

@@ -115,6 +115,14 @@ DROP TABLE course_module_status;
 DROP TABLE course_material;
 DROP TABLE course;
 
+UPDATE course_module_status
+            SET
+                duration = 0
+            WHERE enrollment_id = '1'
+                AND module_id = '1';
+
+select * from course_module_status;
+
 
 
 
