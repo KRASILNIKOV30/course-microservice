@@ -7,10 +7,21 @@ namespace App\Controller\Request;
 use App\Model\Data\GetCourseStatusParams;
 use App\Model\Data\SaveCourseParams;
 use App\Model\Data\SaveEnrollmentParams;
+use App\Model\Data\SaveModuleStatusParams;
 
 class CourseApiRequestParser
 {
     private const MAX_ID_LENGTH = 36;
+
+    public static function parseSaveModuleStatusParams(array $parameters): SaveModuleStatusParams
+    {
+        return new SaveModuleStatusParams(
+            self::parseString($parameters, 'enrollmentId', self::MAX_ID_LENGTH),
+            self::parseString($parameters, 'moduleId', self::MAX_ID_LENGTH),
+            self::parseInteger($parameters, 'progress'),
+            self::parseInteger($parameters, 'duration'),
+        );
+    }
 
     public static function parseSaveCourseParams(array $parameters): SaveCourseParams
     {
