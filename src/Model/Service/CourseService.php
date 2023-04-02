@@ -4,7 +4,6 @@ namespace App\Model\Service;
 
 use App\Common\Database\Synchronization;
 use App\Database\CourseModuleRepository;
-use App\Database\CourseQueryService;
 use App\Database\CourseRepository;
 use App\Database\EnrollmentRepository;
 use App\Model\Course;
@@ -24,20 +23,17 @@ class CourseService
     private CourseRepository $courseRepository;
     private EnrollmentRepository $enrollmentRepository;
     private CourseModuleRepository $courseModuleRepository;
-    private CourseQueryService $courseQueryService;
 
     public function __construct(
         Synchronization $synchronization,
         CourseRepository $courseRepository,
         EnrollmentRepository $enrollmentRepository,
-        CourseModuleRepository $courseModuleRepository,
-        CourseQueryService $courseQueryService
+        CourseModuleRepository $courseModuleRepository
     ) {
         $this->synchronization = $synchronization;
         $this->courseRepository = $courseRepository;
         $this->enrollmentRepository = $enrollmentRepository;
         $this->courseModuleRepository = $courseModuleRepository;
-        $this->courseQueryService = $courseQueryService;
     }
 
     /**
@@ -121,7 +117,7 @@ class CourseService
      */
     private function getCourseProgress(string $enrollmentId): int
     {
-        $progress = $this->courseQueryService->getCourseProgress($enrollmentId);
+        $progress = $this->courseRepository->getProgress($enrollmentId);
         if ($progress === null) {
             throw new EnrollmentNotFoundException("Cannot find enrollment with id $enrollmentId");
         }
@@ -135,7 +131,7 @@ class CourseService
      */
     private function getCourseDuration(string $enrollmentId): int
     {
-        $duration = $this->courseQueryService->getCourseDuration($enrollmentId);
+        $duration = $this->courseRepository->getDuration($enrollmentId);
         if ($duration === null) {
             throw new EnrollmentNotFoundException("Cannot find enrollment with id $enrollmentId");
         }
@@ -150,7 +146,7 @@ class CourseService
      */
     private function getModuleProgress(string $enrollmentId, string $moduleId): int
     {
-        $progress = $this->courseQueryService->getModuleProgress($enrollmentId, $moduleId);
+        $progress = $this->courseModuleRepository->getProgress($enrollmentId, $moduleId);
         if ($progress === null) {
             $message = "Cannot find module status with enrollmentId $enrollmentId and moduleId $moduleId";
             throw new ModuleStatusNotFoundException($message);
@@ -166,7 +162,7 @@ class CourseService
      */
     private function getModuleDuration(string $enrollmentId, string $moduleId): int
     {
-        $duration = $this->courseQueryService->getModuleDuration($enrollmentId, $moduleId);
+        $duration = $this->courseModuleRepository->getDuration($enrollmentId, $moduleId);
         if ($duration === null) {
             $message = "Cannot find module status with enrollmentId $enrollmentId and moduleId $moduleId";
             throw new ModuleStatusNotFoundException($message);

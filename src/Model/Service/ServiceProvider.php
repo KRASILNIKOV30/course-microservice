@@ -7,7 +7,6 @@ namespace App\Model\Service;
 use App\Common\Database\ConnectionProvider;
 use App\Common\Database\Synchronization;
 use App\Database\CourseModuleRepository;
-use App\Database\CourseQueryService;
 use App\Database\CourseRepository;
 use App\Database\EnrollmentRepository;
 
@@ -17,7 +16,6 @@ final class ServiceProvider
     private ?CourseRepository $courseRepository = null;
     private ?EnrollmentRepository $enrollmentRepository = null;
     private ?CourseModuleRepository $courseModuleRepository = null;
-    private ?CourseQueryService $courseQueryService = null;
 
     public static function getInstance(): self
     {
@@ -36,8 +34,7 @@ final class ServiceProvider
                 $synchronization,
                 $this->getCourseRepository(),
                 $this->getEnrollmentRepository(),
-                $this->getCourseModuleRepository(),
-                $this->getCourseQueryService()
+                $this->getCourseModuleRepository()
             );
         }
         return $this->courseService;
@@ -65,13 +62,5 @@ final class ServiceProvider
             $this->courseModuleRepository = new CourseModuleRepository(ConnectionProvider::getConnection());
         }
         return $this->courseModuleRepository;
-    }
-
-    private function getCourseQueryService(): CourseQueryService
-    {
-        if ($this->courseQueryService === null) {
-            $this->courseQueryService = new CourseQueryService(ConnectionProvider::getConnection());
-        }
-        return $this->courseQueryService;
     }
 }

@@ -62,6 +62,44 @@ class CourseRepository
         $this->connection->execute($query, $params);
     }
 
+    public function getProgress(string $enrollmentId): ?int
+    {
+        $query = <<<SQL
+            SELECT
+                progress
+            FROM course_status
+            WHERE
+                enrollment_id = ?
+            SQL;
+
+        $params = [$enrollmentId];
+        $stmt = $this->connection->execute($query, $params);
+        $value = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if (!$value) {
+            return null;
+        }
+        return (int)$value['progress'];
+    }
+
+    public function getDuration(string $enrollmentId): ?int
+    {
+        $query = <<<SQL
+            SELECT
+                duration
+            FROM course_status
+            WHERE
+                enrollment_id = ?
+            SQL;
+
+        $params = [$enrollmentId];
+        $stmt = $this->connection->execute($query, $params);
+        $value = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if (!$value) {
+            return null;
+        }
+        return (int)$value['duration'];
+    }
+
     /**
      * @param string $id
      * @return CourseModule[]
