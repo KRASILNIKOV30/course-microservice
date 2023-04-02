@@ -6,6 +6,9 @@ use _PHPStan_e0e4f009c\Nette\Utils\JsonException;
 use App\Controller\Request\CourseApiRequestParser;
 use App\Controller\Request\RequestValidationException;
 use App\Controller\Response\CourseApiResponseFormatter;
+use App\Model\Exception\CourseNotFoundException;
+use App\Model\Exception\EnrollmentNotFoundException;
+use App\Model\Exception\ModuleStatusNotFoundException;
 use App\Model\Service\ServiceProvider;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -45,6 +48,31 @@ class CourseApiController
         return $this->success($response, []);
     }
 
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     * @throws Throwable
+     */
+    public function saveModuleStatus(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        try {
+            $params = CourseApiRequestParser::parseSaveModuleStatusParams((array)$request->getParsedBody());
+        } catch (RequestValidationException $exception) {
+            return $this->badRequest($response, $exception->getFieldErrors());
+        }
+        ServiceProvider::getInstance()->getCourseService()->saveModuleStatus($params);
+        return $this->success($response, []);
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     * @throws CourseNotFoundException
+     * @throws EnrollmentNotFoundException
+     * @throws ModuleStatusNotFoundException
+     */
     public function getCourseStatus(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         try {

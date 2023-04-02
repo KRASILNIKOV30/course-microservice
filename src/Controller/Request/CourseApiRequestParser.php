@@ -19,7 +19,7 @@ class CourseApiRequestParser
             self::parseString($parameters, 'enrollmentId', self::MAX_ID_LENGTH),
             self::parseString($parameters, 'moduleId', self::MAX_ID_LENGTH),
             self::parseInteger($parameters, 'progress'),
-            self::parseInteger($parameters, 'duration'),
+            self::parseInteger($parameters, 'sessionDuration'),
         );
     }
 
