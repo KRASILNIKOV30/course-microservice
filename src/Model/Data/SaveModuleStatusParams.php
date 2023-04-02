@@ -2,7 +2,7 @@
 
 namespace App\Model\Data;
 
-class SaveMaterialStatusParams
+class SaveModuleStatusParams
 {
     private string $enrollmentId;
     private string $moduleId;

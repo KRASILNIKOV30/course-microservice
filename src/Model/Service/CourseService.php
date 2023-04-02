@@ -12,6 +12,7 @@ use App\Model\Data\GetCourseStatusParams;
 use App\Model\Data\ModuleStatusData;
 use App\Model\Data\SaveCourseParams;
 use App\Model\Data\SaveEnrollmentParams;
+use App\Model\Data\SaveModuleStatusParams;
 use App\Model\Exception\CourseNotFoundException;
 use App\Model\Exception\EnrollmentNotFoundException;
 use App\Model\Exception\ModuleStatusNotFoundException;
@@ -107,6 +108,28 @@ class CourseService
                 $this->courseModuleRepository->enroll($module->getModuleId(), $params->getEnrollmentId());
             }
             $this->enrollmentRepository->save($params);
+        });
+    }
+
+    /**
+     * @param SaveModuleStatusParams $params
+     * @return void
+     * @throws Throwable
+     */
+    public function saveModuleStatus(SaveModuleStatusParams $params)
+    {
+        $this->synchronization->doWithTransaction(function () use ($params) {
+            $enrollmentId = $params->getEnrollmentId();
+            $moduleId = $params->getModuleId();
+            $this->courseModuleRepository->setProgress($enrollmentId, $moduleId, $params->getProgress());
+            $this->courseModuleRepository->increaseDuration($enrollmentId, $moduleId, $params->getSessionDuration());
+            $courseId = $this->enrollmentRepository->getCourseIdByEnrollmentId($enrollmentId);
+            $course = $this->getCourse($courseId);
+            $courseStatus = $this->getCourseStatus(new GetCourseStatusParams(
+                $enrollmentId,
+                $courseId
+            ));
+            $this->courseRepository->recalculateStatus($enrollmentId, $course, $courseStatus);
         });
     }
 
