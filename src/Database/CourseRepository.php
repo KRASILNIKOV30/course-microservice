@@ -5,6 +5,8 @@ namespace App\Database;
 use App\Common\Database\Connection;
 use App\Model\Course;
 use App\Model\CourseModule;
+use App\Model\Data\CourseStatusData;
+use App\Model\Data\ModuleStatusData;
 use App\Model\Data\SaveCourseParams;
 
 class CourseRepository
@@ -98,6 +100,48 @@ class CourseRepository
             return null;
         }
         return (int)$value['duration'];
+    }
+
+    public function recalculateStatus(string $enrollmentId, Course $course, CourseStatusData $courseStatus): void
+    {
+        $modules = $course->getModules();
+        $requiredModules = array_filter($modules, fn($module) => $module->isRequired());
+        $moduleStatuses = $courseStatus->getModules();
+        $progress = $this->calculateProgress($requiredModules, $moduleStatuses);
+        $duration = array_sum(array_map(fn($module) => $module->getDuration(), $moduleStatuses));
+
+        $query = <<<SQL
+            UPDATE course_status
+            SET
+                progress = $progress,
+                duration = $duration
+            WHERE enrollment_id = ?
+            SQL;
+        $params = [$enrollmentId];
+        $this->connection->execute($query, $params);
+    }
+
+    /**
+     * @param CourseModule[] $requiredModules
+     * @param ModuleStatusData[] $moduleStatuses
+     * @return int
+     */
+    private function calculateProgress(array $requiredModules, array $moduleStatuses): int
+    {
+        if (count($requiredModules) === 0) {
+            return 100;
+        }
+        $requiredModuleIds = array_map(fn($module) => $module->getModuleId(), $requiredModules);
+        $requiredModuleStatuses = array_filter(
+            $moduleStatuses,
+            fn($status) => in_array($status->getModuleId(), $requiredModuleIds)
+        );
+        $totalProgress = array_sum(array_map(
+            fn($moduleStatus) => $moduleStatus->getProgress(),
+            $requiredModuleStatuses
+        ));
+
+        return intval(round($totalProgress / count($requiredModules)));
     }
 
     /**
