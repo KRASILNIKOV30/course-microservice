@@ -58,6 +58,8 @@ class CourseRepository
                 (enrollment_id, progress, duration)
             VALUES
                 (?, $progress, 0)
+            ON DUPLICATE KEY UPDATE
+              enrollment_id = enrollment_id
             SQL;
         $params = [$enrollmentId];
 
@@ -195,7 +197,7 @@ class CourseRepository
 
     private function insertCourse(string $courseId): void
     {
-        $query = 'INSERT INTO course (course_id) VALUES (?);';
+        $query = 'INSERT INTO course (course_id) VALUES (?) ON DUPLICATE KEY UPDATE course_id = course_id;';
         $params = [$courseId];
 
         $this->connection->execute($query, $params);
@@ -208,6 +210,8 @@ class CourseRepository
                 (module_id, course_id, is_required)
             VALUES 
                 (:module_id, :course_id, :is_required)
+            ON DUPLICATE KEY UPDATE
+              module_id = module_id
             SQL;
 
         $params = [

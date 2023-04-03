@@ -69,17 +69,6 @@ class CourseApiRequestParser
         return $value;
     }
 
-    public static function parseIntegerArray(array $parameters, string $name): array
-    {
-        $values = self::parseArray($parameters, $name);
-        foreach ($values as $index => $value) {
-            if (!self::isIntegerValue($value)) {
-                throw new RequestValidationException([$name => "Invalid non-integer value at index $index"]);
-            }
-        }
-        return $values;
-    }
-
     public static function parseStringArray(array $parameters, string $name, ?int $maxLength = null): array
     {
         $values = self::parseArray($parameters, $name);

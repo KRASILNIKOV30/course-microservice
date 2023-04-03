@@ -74,6 +74,8 @@ class EnrollmentRepository
                 (enrollment_id, course_id)
             VALUES 
                 (?, ?)
+            ON DUPLICATE KEY UPDATE
+              course_id = course_id
             SQL;
         $params = [$enrollmentId, $courseId];
         $this->connection->execute($query, $params);

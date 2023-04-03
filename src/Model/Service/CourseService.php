@@ -134,6 +134,31 @@ class CourseService
     }
 
     /**
+     * @param string $courseId
+     * @return void
+     * @throws Throwable
+     */
+    public function deleteCourse(string $courseId)
+    {
+        $this->synchronization->doWithTransaction(function () use ($courseId) {
+            $enrollmentIds = $this->enrollmentRepository->listCourseEnrollmentIds($courseId);
+            $course = $this->getCourse($courseId);
+            $moduleIds = array_map(fn($module) => $module->getModuleId(), $course->getModules());
+            foreach ($moduleIds as $moduleId) {
+                foreach ($enrollmentIds as $enrollmentId) {
+                    $this->courseModuleRepository->deleteStatus($enrollmentId, $moduleId);
+                }
+                $this->courseModuleRepository->delete($moduleId);
+            }
+            foreach ($enrollmentIds as $enrollmentId) {
+                $this->courseRepository->deleteStatus($enrollmentId);
+            }
+            $this->enrollmentRepository->deleteCourseEnrollments($courseId);
+            $this->courseRepository->delete($courseId);
+        });
+    }
+
+    /**
      * @param string $enrollmentId
      * @return int
      * @throws EnrollmentNotFoundException

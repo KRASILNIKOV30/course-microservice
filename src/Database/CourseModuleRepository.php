@@ -20,6 +20,8 @@ class CourseModuleRepository
                 (enrollment_id, module_id, progress, duration)
             VALUES
                 (?, ?, 0, 0)
+            ON DUPLICATE KEY UPDATE
+              module_id = module_id
             SQL;
 
         $params = [$enrollmentId, $moduleId];

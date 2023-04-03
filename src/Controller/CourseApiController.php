@@ -84,6 +84,23 @@ class CourseApiController
         return $this->success($response, CourseApiResponseFormatter::formatCourseStatus($courseStatus));
     }
 
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     * @throws Throwable
+     */
+    public function deleteCourse(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        try {
+            $courseId = CourseApiRequestParser::parseString($request->getQueryParams(), 'courseId', 36);
+        } catch (RequestValidationException $exception) {
+            return $this->badRequest($response, $exception->getFieldErrors());
+        }
+        ServiceProvider::getInstance()->getCourseService()->deleteCourse($courseId);
+        return $this->success($response, []);
+    }
+
     private function success(ResponseInterface $response, array $responseData): ResponseInterface
     {
         return $this->withJson($response, $responseData)->withStatus(self::HTTP_STATUS_OK);
