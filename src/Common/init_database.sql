@@ -15,7 +15,7 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- Schema course
 -- -----------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS `course` DEFAULT CHARACTER SET ascii ;
-USE `course` ;
+USE `course`;
 
 -- -----------------------------------------------------
 -- Table `course`.`course`
@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS `course`.`course` (
     `course_id` VARCHAR(36) NOT NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NULL DEFAULT NULL,
+    `deleted_at` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`course_id`))
     ENGINE = InnoDB
     DEFAULT CHARACTER SET = ascii;
@@ -36,6 +37,7 @@ CREATE TABLE IF NOT EXISTS `course`.`course_status` (
     `enrollment_id` VARCHAR(36) NOT NULL,
     `progress` DECIMAL(3,0) NOT NULL,
     `duration` INT NULL DEFAULT NULL,
+    `deleted_at` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`enrollment_id`),
     UNIQUE INDEX `name_UNIQUE_1` (`enrollment_id` ASC) VISIBLE)
     ENGINE = InnoDB
@@ -51,6 +53,7 @@ CREATE TABLE IF NOT EXISTS `course`.`course_material` (
     `is_required` TINYINT NOT NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NULL DEFAULT NULL,
+    `deleted_at` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`module_id`),
     INDEX `fk_course_material_2_idx` (`course_id` ASC) VISIBLE,
     UNIQUE INDEX `index3` (`module_id` ASC) VISIBLE,
@@ -71,6 +74,7 @@ CREATE TABLE IF NOT EXISTS `course`.`course_module_status` (
     `module_id` VARCHAR(36) NOT NULL,
     `progress` DECIMAL(3,0) NOT NULL,
     `duration` INT NULL DEFAULT NULL,
+    `deleted_at` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`enrollment_id`, `module_id`),
     UNIQUE INDEX `name_UNIQUE_2` (`module_id` ASC) VISIBLE,
     UNIQUE INDEX `name_UNIQUE_3` (`module_id` ASC) VISIBLE,
@@ -89,6 +93,7 @@ CREATE TABLE IF NOT EXISTS `course`.`course_module_status` (
 CREATE TABLE IF NOT EXISTS `course`.`course_enrollment` (
     `enrollment_id` VARCHAR(36) NOT NULL,
     `course_id` VARCHAR(45) NOT NULL,
+    `deleted_at` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`enrollment_id`),
     INDEX `fk_course_enrollment_2_idx` (`course_id` ASC) VISIBLE,
     CONSTRAINT `fk_course_enrollment_1`
@@ -108,6 +113,18 @@ SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
+DROP VIEW available_course;
+DROP VIEW available_course_status;
+DROP VIEW available_course_material;
+DROP VIEW available_course_module_status;
+DROP VIEW available_course_enrollment;
+
+CREATE VIEW course AS SELECT * FROM course WHERE deleted_at IS NULL;
+CREATE VIEW course_status AS SELECT * FROM course_status WHERE deleted_at IS NULL;
+CREATE VIEW course_material AS SELECT * FROM course_material WHERE deleted_at IS NULL;
+CREATE VIEW course_module_status AS SELECT * FROM course_module_status WHERE deleted_at IS NULL;
+CREATE VIEW course_enrollment AS SELECT * FROM course_enrollment WHERE deleted_at IS NULL;
+
 use course;
 DROP TABLE course_enrollment;
 DROP TABLE course_status;
@@ -126,7 +143,14 @@ select * from course_module_status;
 SELECT
 	course_id
 FROM course_enrollment
-WHERE enrollment_id = 1
+WHERE enrollment_id = '1';
+
+UPDATE course_status
+SET
+	progress = 100,
+	duration = 0
+WHERE enrollment_id = '1';
+SELECT * FROM course_material;
 
 
 
