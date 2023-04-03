@@ -91,4 +91,30 @@ class CourseModuleRepository
         $params = [$enrollmentId, $moduleId];
         $this->connection->execute($query, $params);
     }
+
+    public function delete(string $moduleId)
+    {
+        $query = <<<SQL
+            UPDATE course_material
+            SET
+                deleted_at = CURRENT_TIMESTAMP
+            WHERE
+                module_id = ?
+            SQL;
+        $params = [$moduleId];
+        $this->connection->execute($query, $params);
+    }
+
+    public function deleteStatus(string $enrollmentId, string $moduleId)
+    {
+        $query = <<<SQL
+            UPDATE course_module_status
+            SET
+                deleted_at = CURRENT_TIMESTAMP
+            WHERE enrollment_id = ?
+                AND module_id = ?
+            SQL;
+        $params = [$enrollmentId, $moduleId];
+        $this->connection->execute($query, $params);
+    }
 }

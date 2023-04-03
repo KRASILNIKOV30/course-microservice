@@ -36,6 +36,37 @@ class EnrollmentRepository
         return (string)$stmt->fetch(\PDO::FETCH_ASSOC)['course_id'];
     }
 
+    /**
+     * @param string $courseId
+     * @return string[]
+     */
+    public function listCourseEnrollmentIds(string $courseId): array
+    {
+        $query = <<<SQL
+            SELECT
+                enrollment_id
+            FROM course_enrollment
+            WHERE course_id = ?
+            SQL;
+        $params = [$courseId];
+        $stmt = $this->connection->execute($query, $params);
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return array_map(fn($row) => $row['enrollment_id'], $rows);
+    }
+
+    public function deleteCourseEnrollments(string $courseId)
+    {
+        $query = <<<SQL
+            UPDATE course_enrollment
+            SET
+                deleted_at = CURRENT_TIMESTAMP
+            WHERE
+                course_id = ?
+            SQL;
+        $params = [$courseId];
+        $this->connection->execute($query, $params);
+    }
+
     private function insertEnrollment(string $enrollmentId, string $courseId): void
     {
         $query = <<<SQL
