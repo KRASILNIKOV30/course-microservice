@@ -2,7 +2,7 @@
 
 namespace App\Model\Service;
 
-use App\Common\Database\Synchronization;
+use App\Common\Doctrine\Synchronization;
 use App\Database\CourseModuleTable;
 use App\Database\CourseTable;
 use App\Database\EnrollmentTable;

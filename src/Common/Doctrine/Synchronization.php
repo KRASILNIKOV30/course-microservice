@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Common\Database;
+namespace App\Common\Doctrine;
 
+use Doctrine\DBAL\Connection;
 use Closure;
 use Throwable;
 
