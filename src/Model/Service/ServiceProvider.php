@@ -6,16 +6,16 @@ namespace App\Model\Service;
 
 use App\Common\Database\ConnectionProvider;
 use App\Common\Database\Synchronization;
-use App\Database\CourseModuleRepository;
-use App\Database\CourseRepository;
-use App\Database\EnrollmentRepository;
+use App\Database\CourseModuleTable;
+use App\Database\CourseTable;
+use App\Database\EnrollmentTable;
 
 final class ServiceProvider
 {
     private ?CourseService $courseService = null;
-    private ?CourseRepository $courseRepository = null;
-    private ?EnrollmentRepository $enrollmentRepository = null;
-    private ?CourseModuleRepository $courseModuleRepository = null;
+    private ?CourseTable $courseRepository = null;
+    private ?EnrollmentTable $enrollmentRepository = null;
+    private ?CourseModuleTable $courseModuleRepository = null;
 
     public static function getInstance(): self
     {
@@ -40,26 +40,26 @@ final class ServiceProvider
         return $this->courseService;
     }
 
-    private function getCourseRepository(): CourseRepository
+    private function getCourseRepository(): CourseTable
     {
         if ($this->courseRepository === null) {
-            $this->courseRepository = new CourseRepository(ConnectionProvider::getConnection());
+            $this->courseRepository = new CourseTable(ConnectionProvider::getConnection());
         }
         return $this->courseRepository;
     }
 
-    private function getEnrollmentRepository(): EnrollmentRepository
+    private function getEnrollmentRepository(): EnrollmentTable
     {
         if ($this->enrollmentRepository === null) {
-            $this->enrollmentRepository = new EnrollmentRepository(ConnectionProvider::getConnection());
+            $this->enrollmentRepository = new EnrollmentTable(ConnectionProvider::getConnection());
         }
         return $this->enrollmentRepository;
     }
 
-    private function getCourseModuleRepository(): CourseModuleRepository
+    private function getCourseModuleRepository(): CourseModuleTable
     {
         if ($this->courseModuleRepository === null) {
-            $this->courseModuleRepository = new CourseModuleRepository(ConnectionProvider::getConnection());
+            $this->courseModuleRepository = new CourseModuleTable(ConnectionProvider::getConnection());
         }
         return $this->courseModuleRepository;
     }

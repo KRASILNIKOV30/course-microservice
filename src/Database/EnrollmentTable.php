@@ -6,7 +6,7 @@ use App\Common\Database\Connection;
 use App\Model\Data\SaveEnrollmentParams;
 use PDOException;
 
-class EnrollmentRepository
+class EnrollmentTable
 {
     private Connection $connection;
 

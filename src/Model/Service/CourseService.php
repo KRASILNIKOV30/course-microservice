@@ -3,9 +3,9 @@
 namespace App\Model\Service;
 
 use App\Common\Database\Synchronization;
-use App\Database\CourseModuleRepository;
-use App\Database\CourseRepository;
-use App\Database\EnrollmentRepository;
+use App\Database\CourseModuleTable;
+use App\Database\CourseTable;
+use App\Database\EnrollmentTable;
 use App\Model\Course;
 use App\Model\Data\CourseStatusData;
 use App\Model\Data\GetCourseStatusParams;
@@ -21,15 +21,15 @@ use Throwable;
 class CourseService
 {
     private Synchronization $synchronization;
-    private CourseRepository $courseRepository;
-    private EnrollmentRepository $enrollmentRepository;
-    private CourseModuleRepository $courseModuleRepository;
+    private CourseTable $courseRepository;
+    private EnrollmentTable $enrollmentRepository;
+    private CourseModuleTable $courseModuleRepository;
 
     public function __construct(
         Synchronization $synchronization,
-        CourseRepository $courseRepository,
-        EnrollmentRepository $enrollmentRepository,
-        CourseModuleRepository $courseModuleRepository
+        CourseTable $courseRepository,
+        EnrollmentTable $enrollmentRepository,
+        CourseModuleTable $courseModuleRepository
     ) {
         $this->synchronization = $synchronization;
         $this->courseRepository = $courseRepository;

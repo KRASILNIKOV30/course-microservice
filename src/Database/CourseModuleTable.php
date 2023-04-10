@@ -4,7 +4,7 @@ namespace App\Database;
 
 use App\Common\Database\Connection;
 
-class CourseModuleRepository
+class CourseModuleTable
 {
     private Connection $connection;
 

@@ -9,7 +9,7 @@ use App\Model\Data\CourseStatusData;
 use App\Model\Data\ModuleStatusData;
 use App\Model\Data\SaveCourseParams;
 
-class CourseRepository
+class CourseTable
 {
     private Connection $connection;
 
