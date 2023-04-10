@@ -29,7 +29,8 @@
         "slim/psr7": "^1.6",
         "slim/slim": "^4.11",
         "slim/twig-view": "^3.3",
-      "ext-pdo": "*"
+        "ext-pdo": "*",
+        "doctrine/orm": "^2.14"
     },
     "require-dev": {
         "jangregor/phpstan-prophecy": "^1.0.0",
