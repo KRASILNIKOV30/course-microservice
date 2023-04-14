@@ -10,6 +10,7 @@ use App\Model\Exception\CourseNotFoundException;
 use App\Model\Exception\EnrollmentNotFoundException;
 use App\Model\Exception\ModuleStatusNotFoundException;
 use App\Model\Service\ServiceProvider;
+use Exception;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
@@ -82,6 +83,24 @@ class CourseApiController
         }
         $courseStatus = ServiceProvider::getInstance()->getCourseService()->getCourseStatus($params);
         return $this->success($response, CourseApiResponseFormatter::formatCourseStatus($courseStatus));
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     * @throws Exception
+     */
+    public function getModule(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        try {
+            $moduleId = CourseApiRequestParser::parseString($request->getQueryParams(), 'moduleId', 36);
+        } catch (RequestValidationException $exception) {
+            return $this->badRequest($response, $exception->getFieldErrors());
+        }
+        $module = ServiceProvider::getInstance()->getCourseService()->getModule($moduleId);
+
+        return $this->success($response, CourseApiResponseFormatter::formatModule($module));
     }
 
     /**

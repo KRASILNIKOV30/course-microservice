@@ -13,9 +13,11 @@ use App\Model\Data\ModuleStatusData;
 use App\Model\Data\SaveCourseParams;
 use App\Model\Data\SaveEnrollmentParams;
 use App\Model\Data\SaveModuleStatusParams;
+use App\Model\Domain\Module;
 use App\Model\Exception\CourseNotFoundException;
 use App\Model\Exception\EnrollmentNotFoundException;
 use App\Model\Exception\ModuleStatusNotFoundException;
+use Exception;
 use Throwable;
 
 class CourseService
@@ -49,6 +51,18 @@ class CourseService
             throw new CourseNotFoundException("Cannot find course with id $id");
         }
         return $course;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getModule(string $id): Module
+    {
+        $module = $this->courseModuleRepository->findOne($id);
+        if (!$module) {
+            throw new Exception("Cannot find module with id $id");
+        }
+        return $module;
     }
 
     /**
@@ -106,6 +120,7 @@ class CourseService
             $modules = $course->getModules();
             foreach ($modules as $module) {
                 $this->courseModuleRepository->enroll($module->getModuleId(), $params->getEnrollmentId());
+                $this->courseModuleRepository->flush();
             }
             $this->enrollmentRepository->save($params);
         });

@@ -199,7 +199,6 @@ class CourseTable
     {
         $query = 'INSERT INTO course (course_id) VALUES (?) ON DUPLICATE KEY UPDATE course_id = course_id;';
         $params = [$courseId];
-
         $this->connection->execute($query, $params);
     }
 

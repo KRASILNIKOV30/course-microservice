@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Model\Service;
 
 use App\Common\Database\ConnectionProvider;
+use App\Common\Doctrine\DoctrineProvider;
 use App\Common\Doctrine\Synchronization;
 use App\Database\CourseModuleTable;
 use App\Database\CourseTable;
@@ -29,7 +30,7 @@ final class ServiceProvider
     public function getCourseService(): CourseService
     {
         if ($this->courseService === null) {
-            $synchronization = new Synchronization(ConnectionProvider::getConnection());
+            $synchronization = new Synchronization(DoctrineProvider::getConnection());
             $this->courseService = new CourseService(
                 $synchronization,
                 $this->getCourseRepository(),
@@ -59,7 +60,10 @@ final class ServiceProvider
     private function getCourseModuleRepository(): CourseModuleTable
     {
         if ($this->courseModuleRepository === null) {
-            $this->courseModuleRepository = new CourseModuleTable(ConnectionProvider::getConnection());
+            $this->courseModuleRepository = new CourseModuleTable(
+                DoctrineProvider::getConnection(),
+                DoctrineProvider::getEntityManager()
+            );
         }
         return $this->courseModuleRepository;
     }

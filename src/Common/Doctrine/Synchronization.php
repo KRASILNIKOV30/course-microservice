@@ -17,13 +17,12 @@ class Synchronization
         $this->connection = $connection;
     }
 
-
     /**
      * @param Closure $action
      * @return mixed
      * @throws Throwable
      */
-    public function doWithTransaction(Closure $action)
+    public function doWithTransaction(Closure $action): mixed
     {
         $this->connection->beginTransaction();
         try {

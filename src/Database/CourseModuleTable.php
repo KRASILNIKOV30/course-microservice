@@ -2,18 +2,46 @@
 
 namespace App\Database;
 
-use App\Common\Database\Connection;
+use App\Model\Domain\Module;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 
 class CourseModuleTable
 {
     private Connection $connection;
-
-    public function __construct(Connection $connection)
+    private EntityManagerInterface $entityManager;
+    private EntityRepository $repository;
+    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
     {
         $this->connection = $connection;
+        $this->entityManager = $entityManager;
+        $this->repository = $entityManager->getRepository(Module::class);
     }
 
-    public function enroll(string $moduleId, string $enrollmentId)
+    public function findOne(string $id): ?Module
+    {
+        return $this->repository->find($id);
+    }
+
+    public function add(Module $module): void
+    {
+        $this->entityManager->persist($module);
+    }
+
+    public function flush(): void
+    {
+        $this->entityManager->flush();
+    }
+
+    /**
+     * @param string $moduleId
+     * @param string $enrollmentId
+     * @return void
+     * @throws Exception
+     */
+    public function enroll(string $moduleId, string $enrollmentId): void
     {
         $query = <<<SQL
             INSERT INTO course_module_status
@@ -25,7 +53,7 @@ class CourseModuleTable
             SQL;
 
         $params = [$enrollmentId, $moduleId];
-        $this->connection->execute($query, $params);
+        $this->connection->executeQuery($query, $params);
     }
 
     public function getProgress(string $enrollmentId, string $moduleId): ?int
@@ -107,7 +135,7 @@ class CourseModuleTable
         $this->connection->execute($query, $params);
     }
 
-    public function deleteStatus(string $enrollmentId, string $moduleId)
+    public function deleteStatus(string $enrollmentId, string $moduleId): void
     {
         $query = <<<SQL
             UPDATE course_module_status
