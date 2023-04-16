@@ -52,7 +52,7 @@ final class ServiceProvider
     private function getEnrollmentRepository(): EnrollmentTable
     {
         if ($this->enrollmentRepository === null) {
-            $this->enrollmentRepository = new EnrollmentTable(ConnectionProvider::getConnection());
+            $this->enrollmentRepository = new EnrollmentTable(DoctrineProvider::getConnection());
         }
         return $this->enrollmentRepository;
     }

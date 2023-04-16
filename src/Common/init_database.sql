@@ -9,13 +9,18 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- -----------------------------------------------------
 -- Schema course
--- -----------------------------------------------------
+-- -----------------------------------------------------	
 
 -- -----------------------------------------------------
 -- Schema course
 -- -----------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS `course` DEFAULT CHARACTER SET ascii ;
 USE `course`;
+DROP TABLE course_enrollment_all;
+DROP TABLE course_status_all;
+DROP TABLE course_module_status_all;
+DROP TABLE course_material_all;
+DROP TABLE course_all;	
 
 -- -----------------------------------------------------
 -- Table `course`.`course`
@@ -59,7 +64,7 @@ CREATE TABLE IF NOT EXISTS `course`.`course_material_all` (
     UNIQUE INDEX `index3` (`module_id` ASC) VISIBLE,
     CONSTRAINT `fk_course_material_2`
     FOREIGN KEY (`course_id`)
-    REFERENCES `course`.`course` (`course_id`)
+    REFERENCES `course`.`course_all` (`course_id`)
     ON DELETE RESTRICT
     ON UPDATE RESTRICT)
     ENGINE = InnoDB
@@ -80,7 +85,7 @@ CREATE TABLE IF NOT EXISTS `course`.`course_module_status_all` (
     UNIQUE INDEX `name_UNIQUE_3` (`module_id` ASC) VISIBLE,
     CONSTRAINT `fk_course_module_status_1`
     FOREIGN KEY (`module_id`)
-    REFERENCES `course`.`course_material` (`module_id`)
+    REFERENCES `course`.`course_material_all` (`module_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
     ENGINE = InnoDB
@@ -98,13 +103,13 @@ CREATE TABLE IF NOT EXISTS `course`.`course_enrollment_all` (
     INDEX `fk_course_enrollment_2_idx` (`course_id` ASC) VISIBLE,
     CONSTRAINT `fk_course_enrollment_1`
     FOREIGN KEY (`enrollment_id`)
-    REFERENCES `course`.`course_status` (`enrollment_id`),
+    REFERENCES `course`.`course_status_all` (`enrollment_id`),
     CONSTRAINT `fk_course_enrollment_2`
     FOREIGN KEY (`course_id`)
-    REFERENCES `course`.`course` (`course_id`),
+    REFERENCES `course`.`course_all` (`course_id`),
     CONSTRAINT `fk_course_enrollment_3`
     FOREIGN KEY (`enrollment_id`)
-    REFERENCES `course`.`course_module_status` (`enrollment_id`))
+    REFERENCES `course`.`course_module_status_all` (`enrollment_id`))
     ENGINE = InnoDB
     DEFAULT CHARACTER SET = ascii;
 
@@ -125,32 +130,6 @@ CREATE VIEW course_material AS SELECT * FROM course_material_all WHERE deleted_a
 CREATE VIEW course_module_status AS SELECT * FROM course_module_status_all WHERE deleted_at IS NULL;
 CREATE VIEW course_enrollment AS SELECT * FROM course_enrollment_all WHERE deleted_at IS NULL;
 
-use course;
-DROP TABLE course_enrollment_all;
-DROP TABLE course_status_all;
-DROP TABLE course_module_status_all;
-DROP TABLE course_material_all;
-DROP TABLE course_all;
-
-UPDATE course_module_status
-SET
-	duration = 0
-WHERE enrollment_id = '1'
-	AND module_id = '1';
-
-select * from course_module_status;
-
-SELECT
-	course_id
-FROM course_enrollment
-WHERE enrollment_id = '1';
-
-UPDATE course_status
-SET
-	progress = 100,
-	duration = 0
-WHERE enrollment_id = '1';
-SELECT * FROM course_material;
 
 
 

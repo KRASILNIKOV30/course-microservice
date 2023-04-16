@@ -10,7 +10,7 @@ class Course
 {
     #[ORM\Id]
     #[ORM\Column(type: 'string', length: 36)]
-    private string $id;
+    private string $course_id;
     /**
      * @var Collection<Module>
      */
@@ -18,20 +18,23 @@ class Course
     private Collection $modules;
 
     /**
-     * @param string $id
+     * @param string $course_id
      * @param Collection<Module> $modules
      */
-    public function __construct(string $id, Collection $modules)
+    public function __construct(string $course_id, Collection $modules)
     {
-        $this->id = $id;
+        $this->course_id = $course_id;
         $this->modules = $modules;
     }
 
-    public function getId(): string
+    public function getCourseId(): string
     {
-        return $this->id;
+        return $this->course_id;
     }
 
+    /**
+     * @return Module[]
+     */
     public function getModules(): array
     {
         return $this->modules->toArray();

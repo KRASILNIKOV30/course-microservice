@@ -116,11 +116,10 @@ class CourseService
     {
         $this->synchronization->doWithTransaction(function () use ($params) {
             $course = $this->getCourse($params->getCourseId());
-            $this->courseRepository->enroll($params->getEnrollmentId(), $course);
+            //$this->courseRepository->enroll($params->getEnrollmentId(), $course);
             $modules = $course->getModules();
             foreach ($modules as $module) {
                 $this->courseModuleRepository->enroll($module->getModuleId(), $params->getEnrollmentId());
-                $this->courseModuleRepository->flush();
             }
             $this->enrollmentRepository->save($params);
         });

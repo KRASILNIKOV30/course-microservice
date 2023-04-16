@@ -2,9 +2,9 @@
 
 namespace App\Database;
 
-use App\Common\Database\Connection;
+use Doctrine\DBAL\Connection;
 use App\Model\Data\SaveEnrollmentParams;
-use PDOException;
+use Doctrine\DBAL\Exception;
 
 class EnrollmentTable
 {
@@ -32,7 +32,7 @@ class EnrollmentTable
             SQL;
 
         $params = [$enrollmentId];
-        $stmt = $this->connection->execute($query, $params);
+        $stmt = $this->connection->executeQuery($query, $params);
         return (string)$stmt->fetch(\PDO::FETCH_ASSOC)['course_id'];
     }
 
@@ -49,12 +49,17 @@ class EnrollmentTable
             WHERE course_id = ?
             SQL;
         $params = [$courseId];
-        $stmt = $this->connection->execute($query, $params);
+        $stmt = $this->connection->executeQuery($query, $params);
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         return array_map(fn($row) => $row['enrollment_id'], $rows);
     }
 
-    public function deleteCourseEnrollments(string $courseId)
+    /**
+     * @param string $courseId
+     * @return void
+     * @throws Exception
+     */
+    public function deleteCourseEnrollments(string $courseId): void
     {
         $query = <<<SQL
             UPDATE course_enrollment
@@ -64,9 +69,15 @@ class EnrollmentTable
                 course_id = ?
             SQL;
         $params = [$courseId];
-        $this->connection->execute($query, $params);
+        $this->connection->executeQuery($query, $params);
     }
 
+    /**
+     * @param string $enrollmentId
+     * @param string $courseId
+     * @return void
+     * @throws Exception
+     */
     private function insertEnrollment(string $enrollmentId, string $courseId): void
     {
         $query = <<<SQL
@@ -74,10 +85,8 @@ class EnrollmentTable
                 (enrollment_id, course_id)
             VALUES 
                 (?, ?)
-            ON DUPLICATE KEY UPDATE
-              course_id = course_id
             SQL;
         $params = [$enrollmentId, $courseId];
-        $this->connection->execute($query, $params);
+        $this->connection->executeQuery($query, $params);
     }
 }

@@ -58,8 +58,6 @@ class CourseTable
                 (enrollment_id, progress, duration)
             VALUES
                 (?, $progress, 0)
-            ON DUPLICATE KEY UPDATE
-              enrollment_id = enrollment_id
             SQL;
         $params = [$enrollmentId];
 
@@ -209,8 +207,6 @@ class CourseTable
                 (module_id, course_id, is_required)
             VALUES 
                 (:module_id, :course_id, :is_required)
-            ON DUPLICATE KEY UPDATE
-              module_id = module_id
             SQL;
 
         $params = [

@@ -48,14 +48,18 @@ class CourseModuleTable
                 (enrollment_id, module_id, progress, duration)
             VALUES
                 (?, ?, 0, 0)
-            ON DUPLICATE KEY UPDATE
-              module_id = module_id
             SQL;
 
         $params = [$enrollmentId, $moduleId];
         $this->connection->executeQuery($query, $params);
     }
 
+    /**
+     * @param string $enrollmentId
+     * @param string $moduleId
+     * @return int|null
+     * @throws Exception
+     */
     public function getProgress(string $enrollmentId, string $moduleId): ?int
     {
         $query = <<<SQL
@@ -67,14 +71,20 @@ class CourseModuleTable
             SQL;
 
         $params = [$enrollmentId, $moduleId];
-        $stmt = $this->connection->execute($query, $params);
-        $value = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $stmt = $this->connection->executeQuery($query, $params);
+        $value = $stmt->fetchAssociative();
         if (!$value) {
             return null;
         }
         return (int)$value['progress'];
     }
 
+    /**
+     * @param string $enrollmentId
+     * @param string $moduleId
+     * @return int|null
+     * @throws Exception
+     */
     public function getDuration(string $enrollmentId, string $moduleId): ?int
     {
         $query = <<<SQL
@@ -86,14 +96,21 @@ class CourseModuleTable
             SQL;
 
         $params = [$enrollmentId, $moduleId];
-        $stmt = $this->connection->execute($query, $params);
-        $value = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $stmt = $this->connection->executeQuery($query, $params);
+        $value = $stmt->fetchAssociative();
         if (!$value) {
             return null;
         }
         return (int)$value['duration'];
     }
 
+    /**
+     * @param string $enrollmentId
+     * @param string $moduleId
+     * @param int $progress
+     * @return void
+     * @throws Exception
+     */
     public function setProgress(string $enrollmentId, string $moduleId, int $progress): void
     {
         $query = <<<SQL
@@ -105,9 +122,16 @@ class CourseModuleTable
             SQL;
 
         $params = [$enrollmentId, $moduleId];
-        $this->connection->execute($query, $params);
+        $this->connection->executeQuery($query, $params);
     }
 
+    /**
+     * @param string $enrollmentId
+     * @param string $moduleId
+     * @param int $duration
+     * @return void
+     * @throws Exception
+     */
     public function increaseDuration(string $enrollmentId, string $moduleId, int $duration): void
     {
         $query = <<<SQL
@@ -119,9 +143,14 @@ class CourseModuleTable
             SQL;
 
         $params = [$enrollmentId, $moduleId];
-        $this->connection->execute($query, $params);
+        $this->connection->executeQuery($query, $params);
     }
 
+    /**
+     * @param string $moduleId
+     * @return void
+     * @throws Exception
+     */
     public function delete(string $moduleId)
     {
         $query = <<<SQL
@@ -132,9 +161,15 @@ class CourseModuleTable
                 module_id = ?
             SQL;
         $params = [$moduleId];
-        $this->connection->execute($query, $params);
+        $this->connection->executeQuery($query, $params);
     }
 
+    /**
+     * @param string $enrollmentId
+     * @param string $moduleId
+     * @return void
+     * @throws Exception
+     */
     public function deleteStatus(string $enrollmentId, string $moduleId): void
     {
         $query = <<<SQL
@@ -145,6 +180,6 @@ class CourseModuleTable
                 AND module_id = ?
             SQL;
         $params = [$enrollmentId, $moduleId];
-        $this->connection->execute($query, $params);
+        $this->connection->executeQuery($query, $params);
     }
 }
