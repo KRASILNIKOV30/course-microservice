@@ -189,7 +189,7 @@ class CourseTable
         if (count($requiredModules) === 0) {
             return 100;
         }
-        $requiredModuleIds = array_map(fn($module) => $module->getModuleId(), $requiredModules);
+        $requiredModuleIds = array_map(fn($module) => $module->getId(), $requiredModules);
         $requiredModuleStatuses = array_filter(
             $moduleStatuses,
             fn($status) => in_array($status->getModuleId(), $requiredModuleIds)

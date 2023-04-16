@@ -21,7 +21,7 @@ class CourseApiResponseFormatter
     public static function formatModule(Module $module): array
     {
         return [
-            'moduleId' => $module->getModuleId(),
+            'moduleId' => $module->getId(),
             'courseId' => $module->getCourseId(),
             'isRequired' => $module->isRequired()
         ];

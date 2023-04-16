@@ -81,9 +81,9 @@ class CourseService
         $moduleStatuses = [];
         foreach ($modules as $module) {
             $moduleStatuses[] = new ModuleStatusData(
-                $module->getModuleId(),
-                $this->getModuleProgress($enrollmentId, $module->getModuleId()),
-                $this->getModuleDuration($enrollmentId, $module->getModuleId())
+                $module->getId(),
+                $this->getModuleProgress($enrollmentId, $module->getId()),
+                $this->getModuleDuration($enrollmentId, $module->getId())
             );
         }
 
@@ -119,7 +119,7 @@ class CourseService
             $this->courseRepository->enroll($params->getEnrollmentId(), $course);
             $modules = $course->getModules();
             foreach ($modules as $module) {
-                $this->courseModuleRepository->enroll($module->getModuleId(), $params->getEnrollmentId());
+                $this->courseModuleRepository->enroll($module->getId(), $params->getEnrollmentId());
             }
             $this->enrollmentRepository->save($params);
         });
@@ -157,7 +157,7 @@ class CourseService
         $this->synchronization->doWithTransaction(function () use ($courseId) {
             $enrollmentIds = $this->enrollmentRepository->listCourseEnrollmentIds($courseId);
             $course = $this->getCourse($courseId);
-            $moduleIds = array_map(fn($module) => $module->getModuleId(), $course->getModules());
+            $moduleIds = array_map(fn($module) => $module->getId(), $course->getModules());
             foreach ($moduleIds as $moduleId) {
                 foreach ($enrollmentIds as $enrollmentId) {
                     $this->courseModuleRepository->deleteStatus($enrollmentId, $moduleId);

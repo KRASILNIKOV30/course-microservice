@@ -27,7 +27,7 @@ class Module
         $this->course_id = $course_id;
     }
 
-    public function getModuleId(): string
+    public function getId(): string
     {
         return $this->module_id;
     }
