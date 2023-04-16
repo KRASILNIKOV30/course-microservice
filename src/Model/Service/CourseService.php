@@ -13,6 +13,7 @@ use App\Model\Data\ModuleStatusData;
 use App\Model\Data\SaveCourseParams;
 use App\Model\Data\SaveEnrollmentParams;
 use App\Model\Data\SaveModuleStatusParams;
+use App\Model\Domain\Enrollment;
 use App\Model\Domain\Module;
 use App\Model\Exception\CourseNotFoundException;
 use App\Model\Exception\EnrollmentNotFoundException;
@@ -121,7 +122,12 @@ class CourseService
             foreach ($modules as $module) {
                 $this->courseModuleRepository->enroll($module->getId(), $params->getEnrollmentId());
             }
-            $this->enrollmentRepository->save($params);
+            $enrollment = new Enrollment(
+                $params->getEnrollmentId(),
+                $params->getCourseId()
+            );
+            $this->enrollmentRepository->add($enrollment);
+            $this->enrollmentRepository->flush();
         });
     }
 

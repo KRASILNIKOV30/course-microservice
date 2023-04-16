@@ -227,14 +227,10 @@ class CourseTable
             INSERT INTO course_material
                 (module_id, course_id, is_required)
             VALUES 
-                (:module_id, :course_id, :is_required)
+                (?, ?, ?)
             SQL;
+        $params = [$moduleId, $courseId, intval($isRequired)];
 
-        $params = [
-            ':module_id' => $moduleId,
-            ':course_id' => $courseId,
-            ':is_required' => intval($isRequired),
-        ];
         $this->connection->executeQuery($query, $params);
     }
 }

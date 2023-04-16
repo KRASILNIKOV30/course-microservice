@@ -2,24 +2,32 @@
 
 namespace App\Database;
 
+use App\Model\Domain\Enrollment;
 use Doctrine\DBAL\Connection;
-use App\Model\Data\SaveEnrollmentParams;
 use Doctrine\DBAL\Exception;
+use Doctrine\ORM\EntityManagerInterface;
 
 class EnrollmentTable
 {
     private Connection $connection;
+    private EntityManagerInterface $entityManager;
 
-    public function __construct(Connection $connection)
-    {
+    public function __construct(
+        Connection $connection,
+        EntityManagerInterface $entityManager,
+    ) {
         $this->connection = $connection;
+        $this->entityManager = $entityManager;
     }
 
-    public function save(SaveEnrollmentParams $saveEnrollmentParams): void
+    public function add(Enrollment $enrollment): void
     {
-        $enrollmentId = $saveEnrollmentParams->getEnrollmentId();
-        $courseId = $saveEnrollmentParams->getCourseId();
-        $this->insertEnrollment($enrollmentId, $courseId);
+        $this->entityManager->persist($enrollment);
+    }
+
+    public function flush(): void
+    {
+        $this->entityManager->flush();
     }
 
     public function getCourseIdByEnrollmentId(string $enrollmentId): string
@@ -69,24 +77,6 @@ class EnrollmentTable
                 course_id = ?
             SQL;
         $params = [$courseId];
-        $this->connection->executeQuery($query, $params);
-    }
-
-    /**
-     * @param string $enrollmentId
-     * @param string $courseId
-     * @return void
-     * @throws Exception
-     */
-    private function insertEnrollment(string $enrollmentId, string $courseId): void
-    {
-        $query = <<<SQL
-            INSERT INTO course_enrollment
-                (enrollment_id, course_id)
-            VALUES 
-                (?, ?)
-            SQL;
-        $params = [$enrollmentId, $courseId];
         $this->connection->executeQuery($query, $params);
     }
 }

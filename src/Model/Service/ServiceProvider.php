@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Model\Service;
 
-use App\Common\Database\ConnectionProvider;
 use App\Common\Doctrine\DoctrineProvider;
 use App\Common\Doctrine\Synchronization;
 use App\Database\CourseModuleTable;
@@ -55,7 +54,10 @@ final class ServiceProvider
     private function getEnrollmentRepository(): EnrollmentTable
     {
         if ($this->enrollmentRepository === null) {
-            $this->enrollmentRepository = new EnrollmentTable(DoctrineProvider::getConnection());
+            $this->enrollmentRepository = new EnrollmentTable(
+                DoctrineProvider::getConnection(),
+                DoctrineProvider::getEntityManager()
+            );
         }
         return $this->enrollmentRepository;
     }
