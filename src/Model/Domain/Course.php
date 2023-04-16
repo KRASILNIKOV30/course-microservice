@@ -11,10 +11,14 @@ class Course
     #[ORM\Id]
     #[ORM\Column(type: 'string', length: 36)]
     private string $course_id;
+
     /**
      * @var Collection<Module>
      */
-    #[ORM\OneToMany(targetEntity: Module::class)]
+    #[ORM\ManyToMany(targetEntity: Module::class)]
+    #[ORM\JoinTable(name: 'course_material')]
+    #[ORM\JoinColumn(name: 'course_id', referencedColumnName: 'course_id')]
+    #[ORM\InverseJoinColumn(name: 'course_id', referencedColumnName: 'course_id')]
     private Collection $modules;
 
     /**

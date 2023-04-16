@@ -2,22 +2,39 @@
 
 namespace App\Database;
 
-use App\Common\Database\Connection;
-use App\Model\Course;
-use App\Model\CourseModule;
+use App\Model\Domain\Module;
+use Doctrine\DBAL\Connection;
+use App\Model\Domain\Course;
 use App\Model\Data\CourseStatusData;
 use App\Model\Data\ModuleStatusData;
 use App\Model\Data\SaveCourseParams;
+use Doctrine\DBAL\Exception;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 
 class CourseTable
 {
     private Connection $connection;
+    private EntityManagerInterface $entityManager;
+    private EntityRepository $repository;
 
-    public function __construct(Connection $connection)
+    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
     {
         $this->connection = $connection;
+        $this->entityManager = $entityManager;
+        $this->repository = $entityManager->getRepository(Course::class);
     }
 
+    public function findOne(string $id): ?Course
+    {
+        return $this->repository->find($id);
+    }
+
+    /**
+     * @param SaveCourseParams $saveCourseParams
+     * @return void
+     * @throws Exception
+     */
     public function save(SaveCourseParams $saveCourseParams): void
     {
         $courseId = $saveCourseParams->getCourseId();
@@ -30,24 +47,12 @@ class CourseTable
         }
     }
 
-    public function findOne(string $id): ?Course
-    {
-        $query = <<<SQL
-            SELECT 
-                c.course_id
-            FROM course c
-            WHERE c.course_id = ?
-            SQL;
-
-        $params = [$id];
-        $stmt = $this->connection->execute($query, $params);
-        if (!$stmt->fetch(\PDO::FETCH_ASSOC)) {
-            return null;
-        }
-
-        return new Course($id, $this->getCourseModules($id));
-    }
-
+    /**
+     * @param string $enrollmentId
+     * @param Course $course
+     * @return void
+     * @throws Exception
+     */
     public function enroll(string $enrollmentId, Course $course): void
     {
         $modules = $course->getModules();
@@ -61,9 +66,14 @@ class CourseTable
             SQL;
         $params = [$enrollmentId];
 
-        $this->connection->execute($query, $params);
+        $this->connection->executeQuery($query, $params);
     }
 
+    /**
+     * @param string $enrollmentId
+     * @return int|null
+     * @throws Exception
+     */
     public function getProgress(string $enrollmentId): ?int
     {
         $query = <<<SQL
@@ -75,14 +85,19 @@ class CourseTable
             SQL;
 
         $params = [$enrollmentId];
-        $stmt = $this->connection->execute($query, $params);
-        $value = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $stmt = $this->connection->executeQuery($query, $params);
+        $value = $stmt->fetchAssociative();
         if (!$value) {
             return null;
         }
         return (int)$value['progress'];
     }
 
+    /**
+     * @param string $enrollmentId
+     * @return int|null
+     * @throws Exception
+     */
     public function getDuration(string $enrollmentId): ?int
     {
         $query = <<<SQL
@@ -94,14 +109,21 @@ class CourseTable
             SQL;
 
         $params = [$enrollmentId];
-        $stmt = $this->connection->execute($query, $params);
-        $value = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $stmt = $this->connection->executeQuery($query, $params);
+        $value = $stmt->fetchAssociative();
         if (!$value) {
             return null;
         }
         return (int)$value['duration'];
     }
 
+    /**
+     * @param string $enrollmentId
+     * @param Course $course
+     * @param CourseStatusData $courseStatus
+     * @return void
+     * @throws Exception
+     */
     public function recalculateStatus(string $enrollmentId, Course $course, CourseStatusData $courseStatus): void
     {
         $modules = $course->getModules();
@@ -118,9 +140,14 @@ class CourseTable
             WHERE enrollment_id = ?
             SQL;
         $params = [$enrollmentId];
-        $this->connection->execute($query, $params);
+        $this->connection->executeQuery($query, $params);
     }
 
+    /**
+     * @param string $courseId
+     * @return void
+     * @throws Exception
+     */
     public function delete(string $courseId)
     {
         $query = <<<SQL
@@ -131,9 +158,14 @@ class CourseTable
                 course_id = ?
             SQL;
         $params = [$courseId];
-        $this->connection->execute($query, $params);
+        $this->connection->executeQuery($query, $params);
     }
 
+    /**
+     * @param string $enrollmentId
+     * @return void
+     * @throws Exception
+     */
     public function deleteStatus(string $enrollmentId)
     {
         $query = <<<SQL
@@ -144,11 +176,11 @@ class CourseTable
                 enrollment_id = ?
             SQL;
         $params = [$enrollmentId];
-        $this->connection->execute($query, $params);
+        $this->connection->executeQuery($query, $params);
     }
 
     /**
-     * @param CourseModule[] $requiredModules
+     * @param Module[] $requiredModules
      * @param ModuleStatusData[] $moduleStatuses
      * @return int
      */
@@ -171,35 +203,24 @@ class CourseTable
     }
 
     /**
-     * @param string $id
-     * @return CourseModule[]
+     * @param string $courseId
+     * @return void
+     * @throws Exception
      */
-    private function getCourseModules(string $id): array
-    {
-        $query = <<<SQL
-            SELECT 
-                cm.module_id,
-                cm.is_required
-            FROM course_material cm
-            WHERE cm.course_id = ?;
-            SQL;
-
-        $params = [$id];
-        $stmt = $this->connection->execute($query, $params);
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        return array_map(
-            fn($row) => $this->hydrateModuleData($row),
-            $rows
-        );
-    }
-
     private function insertCourse(string $courseId): void
     {
         $query = 'INSERT INTO course (course_id) VALUES (?) ON DUPLICATE KEY UPDATE course_id = course_id;';
         $params = [$courseId];
-        $this->connection->execute($query, $params);
+        $this->connection->executeQuery($query, $params);
     }
 
+    /**
+     * @param string $moduleId
+     * @param string $courseId
+     * @param bool $isRequired
+     * @return void
+     * @throws Exception
+     */
     private function insertCourseMaterial(string $moduleId, string $courseId, bool $isRequired): void
     {
         $query = <<<SQL
@@ -214,14 +235,6 @@ class CourseTable
             ':course_id' => $courseId,
             ':is_required' => intval($isRequired),
         ];
-        $this->connection->execute($query, $params);
-    }
-
-    private function hydrateModuleData(array $row)
-    {
-        return new CourseModule(
-            $row['module_id'],
-            $row['is_required']
-        );
+        $this->connection->executeQuery($query, $params);
     }
 }

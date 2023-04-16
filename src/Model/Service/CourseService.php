@@ -6,7 +6,7 @@ use App\Common\Doctrine\Synchronization;
 use App\Database\CourseModuleTable;
 use App\Database\CourseTable;
 use App\Database\EnrollmentTable;
-use App\Model\Course;
+use App\Model\Domain\Course;
 use App\Model\Data\CourseStatusData;
 use App\Model\Data\GetCourseStatusParams;
 use App\Model\Data\ModuleStatusData;
@@ -116,7 +116,7 @@ class CourseService
     {
         $this->synchronization->doWithTransaction(function () use ($params) {
             $course = $this->getCourse($params->getCourseId());
-            //$this->courseRepository->enroll($params->getEnrollmentId(), $course);
+            $this->courseRepository->enroll($params->getEnrollmentId(), $course);
             $modules = $course->getModules();
             foreach ($modules as $module) {
                 $this->courseModuleRepository->enroll($module->getModuleId(), $params->getEnrollmentId());
@@ -130,7 +130,7 @@ class CourseService
      * @return void
      * @throws Throwable
      */
-    public function saveModuleStatus(SaveModuleStatusParams $params)
+    public function saveModuleStatus(SaveModuleStatusParams $params): void
     {
         $this->synchronization->doWithTransaction(function () use ($params) {
             $enrollmentId = $params->getEnrollmentId();

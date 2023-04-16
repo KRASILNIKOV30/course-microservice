@@ -44,7 +44,10 @@ final class ServiceProvider
     private function getCourseRepository(): CourseTable
     {
         if ($this->courseRepository === null) {
-            $this->courseRepository = new CourseTable(ConnectionProvider::getConnection());
+            $this->courseRepository = new CourseTable(
+                DoctrineProvider::getConnection(),
+                DoctrineProvider::getEntityManager()
+            );
         }
         return $this->courseRepository;
     }
