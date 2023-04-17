@@ -9,12 +9,13 @@ use Doctrine\ORM\Mapping as ORM;
 class CourseStatus
 {
     #[ORM\Id]
+    #[ORM\Column(type: 'string')]
     private string $enrollment_id;
 
-    #[ORM\Column(type: 'int')]
+    #[ORM\Column(type: 'integer')]
     private int $progress;
 
-    #[ORM\Column(type: 'int')]
+    #[ORM\Column(type: 'integer')]
     private int $duration;
 
     public function __construct(

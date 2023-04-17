@@ -16,10 +16,10 @@ class ModuleStatus
     #[ORM\Column(type: 'string', length: 36)]
     private string $enrollment_id;
 
-    #[ORM\Column(type: 'int')]
+    #[ORM\Column(type: 'integer')]
     private int $progress;
 
-    #[ORM\Column(type: 'int')]
+    #[ORM\Column(type: 'integer')]
     private int $duration;
 
     public function __construct(

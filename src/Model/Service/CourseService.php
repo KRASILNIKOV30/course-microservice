@@ -81,14 +81,16 @@ class CourseService
      * @return CourseStatusData
      * @throws CourseNotFoundException
      * @throws EnrollmentNotFoundException
-     * @throws ModuleStatusNotFoundException
+     * @throws ModuleStatusNotFoundException|\Doctrine\DBAL\Exception
      */
     public function getCourseStatus(GetCourseStatusParams $params): CourseStatusData
     {
         $enrollmentId = $params->getEnrollmentId();
         $courseId = $params->getCourseId();
+
         $course = $this->getCourse($courseId);
         $modules = $course->getModules();
+
         $moduleStatuses = [];
         foreach ($modules as $module) {
             $moduleStatuses[] = new ModuleStatusData(
@@ -114,7 +116,6 @@ class CourseService
     public function saveCourse(SaveCourseParams $params): void
     {
         $this->synchronization->doWithTransaction(function () use ($params) {
-            //$this->courseRepository->save($params);
             $course = new Course(
                 $params->getCourseId(),
             );
@@ -138,13 +139,12 @@ class CourseService
     {
         $this->synchronization->doWithTransaction(function () use ($params) {
             $course = $this->getCourse($params->getCourseId());
-            $this->courseRepository->enroll($params->getEnrollmentId(), $course);
-            $modules = $course->getModules();
-            $requiredModules = array_filter($modules, fn($module) => $module->isRequired());
-            $progress = empty($requiredModules) ? 100 : 0;
+            $progress = $this->getProgress($course);
+
             $courseStatus = new CourseStatus($params->getEnrollmentId(), $progress);
             $this->courseStatusTable->add($courseStatus);
             $this->courseStatusTable->flush();
+
             $modules = $course->getModules();
             foreach ($modules as $module) {
                 $moduleStatus = new ModuleStatus(
@@ -152,8 +152,9 @@ class CourseService
                     $params->getEnrollmentId()
                 );
                 $this->moduleStatusTable->add($moduleStatus);
-                $this->moduleStatusTable->flush();
             }
+            $this->moduleStatusTable->flush();
+
             $enrollment = new Enrollment(
                 $params->getEnrollmentId(),
                 $params->getCourseId()
@@ -161,6 +162,13 @@ class CourseService
             $this->enrollmentRepository->add($enrollment);
             $this->enrollmentRepository->flush();
         });
+    }
+
+    private function getProgress(Course $course): int
+    {
+        $modules = $course->getModules();
+        $requiredModules = array_filter($modules, fn($module) => $module->isRequired());
+        return empty($requiredModules) ? 100 : 0;
     }
 
     /**
@@ -190,7 +198,7 @@ class CourseService
      * @return void
      * @throws Throwable
      */
-    public function deleteCourse(string $courseId)
+    public function deleteCourse(string $courseId): void
     {
         $this->synchronization->doWithTransaction(function () use ($courseId) {
             $enrollmentIds = $this->enrollmentRepository->listCourseEnrollmentIds($courseId);
@@ -213,7 +221,7 @@ class CourseService
     /**
      * @param string $enrollmentId
      * @return int
-     * @throws EnrollmentNotFoundException
+     * @throws EnrollmentNotFoundException|\Doctrine\DBAL\Exception
      */
     private function getCourseProgress(string $enrollmentId): int
     {
@@ -227,7 +235,7 @@ class CourseService
     /**
      * @param string $enrollmentId
      * @return int
-     * @throws EnrollmentNotFoundException
+     * @throws EnrollmentNotFoundException|\Doctrine\DBAL\Exception
      */
     private function getCourseDuration(string $enrollmentId): int
     {
@@ -242,7 +250,7 @@ class CourseService
      * @param string $enrollmentId
      * @param string $moduleId
      * @return int
-     * @throws ModuleStatusNotFoundException
+     * @throws ModuleStatusNotFoundException|\Doctrine\DBAL\Exception
      */
     private function getModuleProgress(string $enrollmentId, string $moduleId): int
     {
@@ -258,7 +266,7 @@ class CourseService
      * @param string $enrollmentId
      * @param string $moduleId
      * @return int
-     * @throws ModuleStatusNotFoundException
+     * @throws ModuleStatusNotFoundException|\Doctrine\DBAL\Exception
      */
     private function getModuleDuration(string $enrollmentId, string $moduleId): int
     {
