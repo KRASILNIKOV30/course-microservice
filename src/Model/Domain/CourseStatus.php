@@ -9,7 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
 class CourseStatus
 {
     #[ORM\Id]
-    #[ORM\Column(type: 'string', length: 36)]
     private string $enrollment_id;
 
     #[ORM\Column(type: 'int')]
@@ -19,18 +18,15 @@ class CourseStatus
     private int $duration;
 
     public function __construct(
-        $enrollment_id,
-        $progress,
-        $duration,
+        string $enrollment_id,
+        ?int $progress = 0,
+        ?int $duration = 0
     ) {
         $this->enrollment_id = $enrollment_id;
         $this->progress = $progress;
         $this->duration = $duration;
     }
 
-    /**
-     * @return string
-     */
     public function getEnrollmentId(): string
     {
         return $this->enrollment_id;

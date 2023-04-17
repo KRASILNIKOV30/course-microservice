@@ -25,8 +25,8 @@ class ModuleStatus
     public function __construct(
         string $module_id,
         string $enrollment_id,
-        int $progress,
-        int $duration
+        ?int $progress = 0,
+        ?int $duration = 0
     ) {
         $this->module_id = $module_id;
         $this->enrollment_id = $enrollment_id;

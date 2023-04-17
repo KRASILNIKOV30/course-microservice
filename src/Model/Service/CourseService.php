@@ -4,8 +4,10 @@ namespace App\Model\Service;
 
 use App\Common\Doctrine\Synchronization;
 use App\Database\CourseModuleTable;
+use App\Database\CourseStatusTable;
 use App\Database\CourseTable;
 use App\Database\EnrollmentTable;
+use App\Database\ModuleStatusTable;
 use App\Model\Domain\Course;
 use App\Model\Data\CourseStatusData;
 use App\Model\Data\GetCourseStatusParams;
@@ -13,8 +15,10 @@ use App\Model\Data\ModuleStatusData;
 use App\Model\Data\SaveCourseParams;
 use App\Model\Data\SaveEnrollmentParams;
 use App\Model\Data\SaveModuleStatusParams;
+use App\Model\Domain\CourseStatus;
 use App\Model\Domain\Enrollment;
 use App\Model\Domain\Module;
+use App\Model\Domain\ModuleStatus;
 use App\Model\Exception\CourseNotFoundException;
 use App\Model\Exception\EnrollmentNotFoundException;
 use App\Model\Exception\ModuleStatusNotFoundException;
@@ -27,17 +31,23 @@ class CourseService
     private CourseTable $courseRepository;
     private EnrollmentTable $enrollmentRepository;
     private CourseModuleTable $courseModuleRepository;
+    private CourseStatusTable $courseStatusTable;
+    private ModuleStatusTable $moduleStatusTable;
 
     public function __construct(
         Synchronization $synchronization,
         CourseTable $courseRepository,
         EnrollmentTable $enrollmentRepository,
-        CourseModuleTable $courseModuleRepository
+        CourseModuleTable $courseModuleRepository,
+        CourseStatusTable $courseStatusTable,
+        ModuleStatusTable $moduleStatusTable
     ) {
         $this->synchronization = $synchronization;
         $this->courseRepository = $courseRepository;
         $this->enrollmentRepository = $enrollmentRepository;
         $this->courseModuleRepository = $courseModuleRepository;
+        $this->courseStatusTable = $courseStatusTable;
+        $this->moduleStatusTable = $moduleStatusTable;
     }
 
     /**
@@ -101,10 +111,21 @@ class CourseService
      * @return void
      * @throws Throwable
      */
-    public function saveCourse(SaveCourseParams $params)
+    public function saveCourse(SaveCourseParams $params): void
     {
         $this->synchronization->doWithTransaction(function () use ($params) {
-            $this->courseRepository->save($params);
+            //$this->courseRepository->save($params);
+            $course = new Course(
+                $params->getCourseId(),
+            );
+            $moduleIds = $params->getModuleIds();
+            $requiredModuleIds = $params->getRequiredModuleIds();
+            foreach ($moduleIds as $moduleId) {
+                $isRequired = in_array($moduleId, $requiredModuleIds, true);
+                $course->addModule($moduleId, $isRequired);
+            }
+            $this->courseRepository->add($course);
+            $this->courseRepository->flush();
         });
     }
 
@@ -113,14 +134,25 @@ class CourseService
      * @return void
      * @throws Throwable
      */
-    public function saveEnrollment(SaveEnrollmentParams $params)
+    public function saveEnrollment(SaveEnrollmentParams $params): void
     {
         $this->synchronization->doWithTransaction(function () use ($params) {
             $course = $this->getCourse($params->getCourseId());
             $this->courseRepository->enroll($params->getEnrollmentId(), $course);
             $modules = $course->getModules();
+            $requiredModules = array_filter($modules, fn($module) => $module->isRequired());
+            $progress = empty($requiredModules) ? 100 : 0;
+            $courseStatus = new CourseStatus($params->getEnrollmentId(), $progress);
+            $this->courseStatusTable->add($courseStatus);
+            $this->courseStatusTable->flush();
+            $modules = $course->getModules();
             foreach ($modules as $module) {
-                $this->courseModuleRepository->enroll($module->getId(), $params->getEnrollmentId());
+                $moduleStatus = new ModuleStatus(
+                    $module->getId(),
+                    $params->getEnrollmentId()
+                );
+                $this->moduleStatusTable->add($moduleStatus);
+                $this->moduleStatusTable->flush();
             }
             $enrollment = new Enrollment(
                 $params->getEnrollmentId(),

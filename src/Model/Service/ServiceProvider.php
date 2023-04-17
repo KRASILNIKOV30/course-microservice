@@ -7,8 +7,10 @@ namespace App\Model\Service;
 use App\Common\Doctrine\DoctrineProvider;
 use App\Common\Doctrine\Synchronization;
 use App\Database\CourseModuleTable;
+use App\Database\CourseStatusTable;
 use App\Database\CourseTable;
 use App\Database\EnrollmentTable;
+use App\Database\ModuleStatusTable;
 
 final class ServiceProvider
 {
@@ -16,6 +18,8 @@ final class ServiceProvider
     private ?CourseTable $courseRepository = null;
     private ?EnrollmentTable $enrollmentRepository = null;
     private ?CourseModuleTable $courseModuleRepository = null;
+    private ?CourseStatusTable $courseStatusTable = null;
+    private ?ModuleStatusTable $moduleStatusTable = null;
 
     public static function getInstance(): self
     {
@@ -34,7 +38,9 @@ final class ServiceProvider
                 $synchronization,
                 $this->getCourseRepository(),
                 $this->getEnrollmentRepository(),
-                $this->getCourseModuleRepository()
+                $this->getCourseModuleRepository(),
+                $this->getCourseStatusTable(),
+                $this->getModuleStatusTable()
             );
         }
         return $this->courseService;
@@ -71,5 +77,26 @@ final class ServiceProvider
             );
         }
         return $this->courseModuleRepository;
+    }
+
+    private function getCourseStatusTable(): CourseStatusTable
+    {
+        if ($this->courseStatusTable === null) {
+            $this->courseStatusTable = new CourseStatusTable(
+                DoctrineProvider::getEntityManager()
+            );
+        }
+        return $this->courseStatusTable;
+    }
+
+    private function getModuleStatusTable(): ModuleStatusTable
+    {
+        if ($this->moduleStatusTable === null) {
+            $this->moduleStatusTable = new ModuleStatusTable(
+                DoctrineProvider::getConnection(),
+                DoctrineProvider::getEntityManager()
+            );
+        }
+        return $this->moduleStatusTable;
     }
 }

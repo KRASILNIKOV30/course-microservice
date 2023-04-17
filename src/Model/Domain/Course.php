@@ -2,6 +2,7 @@
 
 namespace App\Model\Domain;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -15,20 +16,16 @@ class Course
     /**
      * @var Collection<Module>
      */
-    #[ORM\ManyToMany(targetEntity: Module::class)]
-    #[ORM\JoinTable(name: 'course_material')]
-    #[ORM\JoinColumn(name: 'course_id', referencedColumnName: 'course_id')]
-    #[ORM\InverseJoinColumn(name: 'course_id', referencedColumnName: 'course_id')]
+    #[ORM\OneToMany(mappedBy: 'course', targetEntity: Module::class, cascade: ['persist'])]
     private Collection $modules;
 
     /**
      * @param string $course_id
-     * @param Collection<Module> $modules
      */
-    public function __construct(string $course_id, Collection $modules)
+    public function __construct(string $course_id)
     {
         $this->course_id = $course_id;
-        $this->modules = $modules;
+        $this->modules = new ArrayCollection();
     }
 
     public function getId(): string
@@ -42,5 +39,15 @@ class Course
     public function getModules(): array
     {
         return $this->modules->toArray();
+    }
+
+    public function addModule(string $id, bool $isRequired): void
+    {
+        $module = new Module(
+            $id,
+            $isRequired,
+            $this
+        );
+        $this->modules->add($module);
     }
 }

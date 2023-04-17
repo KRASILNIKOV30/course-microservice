@@ -30,6 +30,17 @@ class CourseTable
         return $this->repository->find($id);
     }
 
+    public function add(Course $course): void
+    {
+        $this->entityManager->persist($course);
+    }
+
+    public function flush(): void
+    {
+        $this->entityManager->flush();
+    }
+
+
     /**
      * @param SaveCourseParams $saveCourseParams
      * @return void
