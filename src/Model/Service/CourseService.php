@@ -90,6 +90,22 @@ class CourseService
         return $module;
     }
 
+    /**
+     * @param string $moduleId
+     * @param string $enrollmentId
+     * @return ModuleStatus
+     * @throws ModuleStatusNotFoundException
+     */
+    public function getModuleStatus(string $moduleId, string $enrollmentId): ModuleStatus
+    {
+        $moduleStatus = $this->moduleStatusTable->findOne($moduleId, $enrollmentId);
+        if ($moduleStatus === null) {
+            $message = "Cannot find module status with module id $moduleId and enrollment id $enrollmentId";
+            throw new ModuleStatusNotFoundException($message);
+        }
+        return $moduleStatus;
+    }
+
 
     /**
      * @param GetCourseStatusParams $params
@@ -198,8 +214,9 @@ class CourseService
             $enrollmentId = $params->getEnrollmentId();
             $moduleId = $params->getModuleId();
 
-            $this->courseModuleRepository->setProgress($enrollmentId, $moduleId, $params->getProgress());
-            $this->courseModuleRepository->increaseDuration($enrollmentId, $moduleId, $params->getSessionDuration());
+            $moduleStatus = $this->getModuleStatus($moduleId, $enrollmentId);
+            $moduleStatus->edit($params->getProgress(), $params->getSessionDuration());
+            $this->moduleStatusTable->flush();
 
             $courseId = $this->enrollmentRepository->getCourseIdByEnrollmentId($enrollmentId);
             $course = $this->getCourse($courseId);

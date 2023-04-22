@@ -93,7 +93,6 @@ final class ServiceProvider
     {
         if ($this->moduleStatusTable === null) {
             $this->moduleStatusTable = new ModuleStatusTable(
-                DoctrineProvider::getConnection(),
                 DoctrineProvider::getEntityManager()
             );
         }

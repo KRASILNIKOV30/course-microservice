@@ -34,10 +34,10 @@ class ModuleStatus
         $this->duration = $duration;
     }
 
-    public function edit(int $progress, int $duration): void
+    public function edit(int $progress, int $sessionDuration): void
     {
         $this->progress = $progress;
-        $this->duration = $duration;
+        $this->duration += $sessionDuration;
     }
 
     /**

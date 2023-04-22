@@ -9,14 +9,17 @@ use Doctrine\ORM\EntityRepository;
 
 class ModuleStatusTable
 {
-    private Connection $connection;
     private EntityManagerInterface $entityManager;
     private EntityRepository $repository;
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        $this->connection = $connection;
         $this->entityManager = $entityManager;
         $this->repository = $entityManager->getRepository(ModuleStatus::class);
+    }
+
+    public function findOne(string $moduleId, string $enrollmentId): ?ModuleStatus
+    {
+        return $this->repository->findOneBy(['module_id' => $moduleId, 'enrollment_id' => $enrollmentId]);
     }
 
     public function add(ModuleStatus $moduleStatus): void
