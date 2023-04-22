@@ -34,6 +34,12 @@ class ModuleStatus
         $this->duration = $duration;
     }
 
+    public function edit(int $progress, int $duration): void
+    {
+        $this->progress = $progress;
+        $this->duration = $duration;
+    }
+
     /**
      * @return string
      */
