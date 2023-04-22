@@ -16,10 +16,10 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS `course` DEFAULT CHARACTER SET ascii ;
 USE `course`;
-DROP TABLE course_enrollment_all;
-DROP TABLE course_status_all;
 DROP TABLE course_module_status_all;
+DROP TABLE course_status_all;
 DROP TABLE course_material_all;
+DROP TABLE course_enrollment_all;
 DROP TABLE course_all;	
 
 -- -----------------------------------------------------
@@ -34,6 +34,20 @@ CREATE TABLE IF NOT EXISTS `course`.`course_all` (
     ENGINE = InnoDB
     DEFAULT CHARACTER SET = ascii;
 
+-- -----------------------------------------------------
+-- Table `course`.`course_enrollment`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `course`.`course_enrollment_all` (
+    `enrollment_id` VARCHAR(36) NOT NULL,
+    `course_id` VARCHAR(45) NOT NULL,
+    `deleted_at` DATETIME NULL DEFAULT NULL,
+    PRIMARY KEY (`enrollment_id`),
+    INDEX `fk_course_enrollment_2_idx` (`course_id` ASC) VISIBLE,
+    CONSTRAINT `fk_course_enrollment_2`
+    FOREIGN KEY (`course_id`)
+    REFERENCES `course`.`course_all` (`course_id`))
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = ascii;
 
 -- -----------------------------------------------------
 -- Table `course`.`course_status`
@@ -44,10 +58,12 @@ CREATE TABLE IF NOT EXISTS `course`.`course_status_all` (
     `duration` INT NULL DEFAULT NULL,
     `deleted_at` DATETIME NULL DEFAULT NULL,
     PRIMARY KEY (`enrollment_id`),
-    UNIQUE INDEX `name_UNIQUE_1` (`enrollment_id` ASC) VISIBLE)
+    UNIQUE INDEX `name_UNIQUE_1` (`enrollment_id` ASC) VISIBLE,
+    CONSTRAINT `fk_course_status_1`
+    FOREIGN KEY (`enrollment_id`)
+    REFERENCES `course`.`course_enrollment_all` (`enrollment_id`))
     ENGINE = InnoDB
     DEFAULT CHARACTER SET = ascii;
-
 
 -- -----------------------------------------------------
 -- Table `course`.`course_material`
@@ -85,38 +101,15 @@ CREATE TABLE IF NOT EXISTS `course`.`course_module_status_all` (
     UNIQUE INDEX `name_UNIQUE_3` (`module_id` ASC) VISIBLE,
     CONSTRAINT `fk_course_module_status_1`
     FOREIGN KEY (`module_id`)
-    REFERENCES `course`.`course_material_all` (`module_id`)
+    REFERENCES `course`.`course_material_all` (`module_id`),
+    CONSTRAINT `fk_course_module_status_2`
+    FOREIGN KEY (`enrollment_id`)
+    REFERENCES `course`.`course_enrollment_all` (`enrollment_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
     ENGINE = InnoDB
     DEFAULT CHARACTER SET = ascii;
-
-
--- -----------------------------------------------------
--- Table `course`.`course_enrollment`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `course`.`course_enrollment_all` (
-    `enrollment_id` VARCHAR(36) NOT NULL,
-    `course_id` VARCHAR(45) NOT NULL,
-    `deleted_at` DATETIME NULL DEFAULT NULL,
-    PRIMARY KEY (`enrollment_id`),
-    INDEX `fk_course_enrollment_2_idx` (`course_id` ASC) VISIBLE,
-    CONSTRAINT `fk_course_enrollment_1`
-    FOREIGN KEY (`enrollment_id`)
-    REFERENCES `course`.`course_status_all` (`enrollment_id`),
-    CONSTRAINT `fk_course_enrollment_2`
-    FOREIGN KEY (`course_id`)
-    REFERENCES `course`.`course_all` (`course_id`),
-    CONSTRAINT `fk_course_enrollment_3`
-    FOREIGN KEY (`enrollment_id`)
-    REFERENCES `course`.`course_module_status_all` (`enrollment_id`))
-    ENGINE = InnoDB
-    DEFAULT CHARACTER SET = ascii;
-
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+    
 
 DROP VIEW course;
 DROP VIEW course_status;
@@ -129,6 +122,10 @@ CREATE VIEW course_status AS SELECT * FROM course_status_all WHERE deleted_at IS
 CREATE VIEW course_material AS SELECT * FROM course_material_all WHERE deleted_at IS NULL;
 CREATE VIEW course_module_status AS SELECT * FROM course_module_status_all WHERE deleted_at IS NULL;
 CREATE VIEW course_enrollment AS SELECT * FROM course_enrollment_all WHERE deleted_at IS NULL;
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
 
 

@@ -55,13 +55,27 @@ class CourseService
      * @return Course
      * @throws CourseNotFoundException
      */
-    public function getCourse(string $id): Course
+    private function getCourse(string $id): Course
     {
         $course = $this->courseRepository->findOne($id);
         if ($course === null) {
             throw new CourseNotFoundException("Cannot find course with id $id");
         }
         return $course;
+    }
+
+    /**
+     * @param string $enrollmentId
+     * @return CourseStatus
+     * @throws Exception
+     */
+    private function getCourseStatus(string $enrollmentId): CourseStatus
+    {
+        $courseStatus = $this->courseStatusTable->findOne($enrollmentId);
+        if ($courseStatus === null) {
+            throw new Exception("Cannot find course staus with enrollmentId $enrollmentId");
+        }
+        return $courseStatus;
     }
 
     /**
@@ -76,14 +90,16 @@ class CourseService
         return $module;
     }
 
+
     /**
      * @param GetCourseStatusParams $params
      * @return CourseStatusData
      * @throws CourseNotFoundException
-     * @throws EnrollmentNotFoundException
-     * @throws ModuleStatusNotFoundException|\Doctrine\DBAL\Exception
+     * @throws ModuleStatusNotFoundException
+     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
      */
-    public function getCourseStatus(GetCourseStatusParams $params): CourseStatusData
+    public function getCourseStatusData(GetCourseStatusParams $params): CourseStatusData
     {
         $enrollmentId = $params->getEnrollmentId();
         $courseId = $params->getCourseId();
@@ -99,12 +115,12 @@ class CourseService
                 $this->getModuleDuration($enrollmentId, $module->getId())
             );
         }
-
+        $courseStatus = $this->getCourseStatus($enrollmentId);
         return new CourseStatusData(
             $enrollmentId,
             $moduleStatuses,
-            $this->getCourseProgress($enrollmentId),
-            $this->getCourseDuration($enrollmentId)
+            $courseStatus->getProgress(),
+            $courseStatus->getDuration()
         );
     }
 
@@ -138,6 +154,13 @@ class CourseService
     public function saveEnrollment(SaveEnrollmentParams $params): void
     {
         $this->synchronization->doWithTransaction(function () use ($params) {
+            $enrollment = new Enrollment(
+                $params->getEnrollmentId(),
+                $params->getCourseId()
+            );
+            $this->enrollmentRepository->add($enrollment);
+            $this->enrollmentRepository->flush();
+
             $course = $this->getCourse($params->getCourseId());
             $progress = $this->getProgress($course);
 
@@ -154,13 +177,6 @@ class CourseService
                 $this->moduleStatusTable->add($moduleStatus);
             }
             $this->moduleStatusTable->flush();
-
-            $enrollment = new Enrollment(
-                $params->getEnrollmentId(),
-                $params->getCourseId()
-            );
-            $this->enrollmentRepository->add($enrollment);
-            $this->enrollmentRepository->flush();
         });
     }
 
@@ -185,7 +201,7 @@ class CourseService
             $this->courseModuleRepository->increaseDuration($enrollmentId, $moduleId, $params->getSessionDuration());
             $courseId = $this->enrollmentRepository->getCourseIdByEnrollmentId($enrollmentId);
             $course = $this->getCourse($courseId);
-            $courseStatus = $this->getCourseStatus(new GetCourseStatusParams(
+            $courseStatus = $this->getCourseStatusData(new GetCourseStatusParams(
                 $enrollmentId,
                 $courseId
             ));
@@ -216,34 +232,6 @@ class CourseService
             $this->enrollmentRepository->deleteCourseEnrollments($courseId);
             $this->courseRepository->delete($courseId);
         });
-    }
-
-    /**
-     * @param string $enrollmentId
-     * @return int
-     * @throws EnrollmentNotFoundException|\Doctrine\DBAL\Exception
-     */
-    private function getCourseProgress(string $enrollmentId): int
-    {
-        $progress = $this->courseRepository->getProgress($enrollmentId);
-        if ($progress === null) {
-            throw new EnrollmentNotFoundException("Cannot find enrollment with id $enrollmentId");
-        }
-        return $progress;
-    }
-
-    /**
-     * @param string $enrollmentId
-     * @return int
-     * @throws EnrollmentNotFoundException|\Doctrine\DBAL\Exception
-     */
-    private function getCourseDuration(string $enrollmentId): int
-    {
-        $duration = $this->courseRepository->getDuration($enrollmentId);
-        if ($duration === null) {
-            throw new EnrollmentNotFoundException("Cannot find enrollment with id $enrollmentId");
-        }
-        return $duration;
     }
 
     /**

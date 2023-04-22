@@ -2,12 +2,10 @@
 
 namespace App\Controller;
 
-use _PHPStan_e0e4f009c\Nette\Utils\JsonException;
 use App\Controller\Request\CourseApiRequestParser;
 use App\Controller\Request\RequestValidationException;
 use App\Controller\Response\CourseApiResponseFormatter;
 use App\Model\Exception\CourseNotFoundException;
-use App\Model\Exception\EnrollmentNotFoundException;
 use App\Model\Exception\ModuleStatusNotFoundException;
 use App\Model\Service\ServiceProvider;
 use Exception;
@@ -71,8 +69,8 @@ class CourseApiController
      * @param ResponseInterface $response
      * @return ResponseInterface
      * @throws CourseNotFoundException
-     * @throws EnrollmentNotFoundException
      * @throws ModuleStatusNotFoundException
+     * @throws \Doctrine\DBAL\Exception
      */
     public function getCourseStatus(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
@@ -81,7 +79,7 @@ class CourseApiController
         } catch (RequestValidationException $exception) {
             return $this->badRequest($response, $exception->getFieldErrors());
         }
-        $courseStatus = ServiceProvider::getInstance()->getCourseService()->getCourseStatus($params);
+        $courseStatus = ServiceProvider::getInstance()->getCourseService()->getCourseStatusData($params);
         return $this->success($response, CourseApiResponseFormatter::formatCourseStatus($courseStatus));
     }
 
@@ -137,7 +135,7 @@ class CourseApiController
             $responseBytes = json_encode($responseData, JSON_THROW_ON_ERROR);
             $response->getBody()->write($responseBytes);
             return $response->withHeader('Content-Type', 'application/json');
-        } catch (JsonException $e) {
+        } catch (\JsonException $e) {
             throw new RuntimeException($e->getMessage(), $e->getCode(), $e);
         }
     }

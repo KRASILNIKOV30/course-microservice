@@ -40,94 +40,6 @@ class CourseTable
         $this->entityManager->flush();
     }
 
-
-    /**
-     * @param SaveCourseParams $saveCourseParams
-     * @return void
-     * @throws Exception
-     */
-    public function save(SaveCourseParams $saveCourseParams): void
-    {
-        $courseId = $saveCourseParams->getCourseId();
-        $this->insertCourse($courseId);
-        $moduleIds = $saveCourseParams->getModuleIds();
-        $requiredModuleIds = $saveCourseParams->getRequiredModuleIds();
-        foreach ($moduleIds as $moduleId) {
-            $isRequired = in_array($moduleId, $requiredModuleIds, true);
-            $this->insertCourseMaterial($moduleId, $courseId, $isRequired);
-        }
-    }
-
-    /**
-     * @param string $enrollmentId
-     * @param Course $course
-     * @return void
-     * @throws Exception
-     */
-    public function enroll(string $enrollmentId, Course $course): void
-    {
-        $modules = $course->getModules();
-        $requiredModules = array_filter($modules, fn($module) => $module->isRequired());
-        $progress = empty($requiredModules) ? 100 : 0;
-        $query = <<<SQL
-            INSERT INTO course_status
-                (enrollment_id, progress, duration)
-            VALUES
-                (?, $progress, 0)
-            SQL;
-        $params = [$enrollmentId];
-
-        $this->connection->executeQuery($query, $params);
-    }
-
-    /**
-     * @param string $enrollmentId
-     * @return int|null
-     * @throws Exception
-     */
-    public function getProgress(string $enrollmentId): ?int
-    {
-        $query = <<<SQL
-            SELECT
-                progress
-            FROM course_status
-            WHERE
-                enrollment_id = ?
-            SQL;
-
-        $params = [$enrollmentId];
-        $stmt = $this->connection->executeQuery($query, $params);
-        $value = $stmt->fetchAssociative();
-        if (!$value) {
-            return null;
-        }
-        return (int)$value['progress'];
-    }
-
-    /**
-     * @param string $enrollmentId
-     * @return int|null
-     * @throws Exception
-     */
-    public function getDuration(string $enrollmentId): ?int
-    {
-        $query = <<<SQL
-            SELECT
-                duration
-            FROM course_status
-            WHERE
-                enrollment_id = ?
-            SQL;
-
-        $params = [$enrollmentId];
-        $stmt = $this->connection->executeQuery($query, $params);
-        $value = $stmt->fetchAssociative();
-        if (!$value) {
-            return null;
-        }
-        return (int)$value['duration'];
-    }
-
     /**
      * @param string $enrollmentId
      * @param Course $course
@@ -210,38 +122,6 @@ class CourseTable
             $requiredModuleStatuses
         ));
 
-        return intval(round($totalProgress / count($requiredModules)));
-    }
-
-    /**
-     * @param string $courseId
-     * @return void
-     * @throws Exception
-     */
-    private function insertCourse(string $courseId): void
-    {
-        $query = 'INSERT INTO course (course_id) VALUES (?) ON DUPLICATE KEY UPDATE course_id = course_id;';
-        $params = [$courseId];
-        $this->connection->executeQuery($query, $params);
-    }
-
-    /**
-     * @param string $moduleId
-     * @param string $courseId
-     * @param bool $isRequired
-     * @return void
-     * @throws Exception
-     */
-    private function insertCourseMaterial(string $moduleId, string $courseId, bool $isRequired): void
-    {
-        $query = <<<SQL
-            INSERT INTO course_material
-                (module_id, course_id, is_required)
-            VALUES 
-                (?, ?, ?)
-            SQL;
-        $params = [$moduleId, $courseId, intval($isRequired)];
-
-        $this->connection->executeQuery($query, $params);
+        return intval(floor($totalProgress / count($requiredModules)));
     }
 }
