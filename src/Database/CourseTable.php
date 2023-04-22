@@ -7,7 +7,6 @@ use Doctrine\DBAL\Connection;
 use App\Model\Domain\Course;
 use App\Model\Data\CourseStatusData;
 use App\Model\Data\ModuleStatusData;
-use App\Model\Data\SaveCourseParams;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
@@ -38,32 +37,6 @@ class CourseTable
     public function flush(): void
     {
         $this->entityManager->flush();
-    }
-
-    /**
-     * @param string $enrollmentId
-     * @param Course $course
-     * @param CourseStatusData $courseStatus
-     * @return void
-     * @throws Exception
-     */
-    public function recalculateStatus(string $enrollmentId, Course $course, CourseStatusData $courseStatus): void
-    {
-        $modules = $course->getModules();
-        $requiredModules = array_filter($modules, fn($module) => $module->isRequired());
-        $moduleStatuses = $courseStatus->getModules();
-        $progress = $this->calculateProgress($requiredModules, $moduleStatuses);
-        $duration = array_sum(array_map(fn($module) => $module->getDuration(), $moduleStatuses));
-
-        $query = <<<SQL
-            UPDATE course_status
-            SET
-                progress = $progress,
-                duration = $duration
-            WHERE enrollment_id = ?
-            SQL;
-        $params = [$enrollmentId];
-        $this->connection->executeQuery($query, $params);
     }
 
     /**
@@ -100,28 +73,5 @@ class CourseTable
             SQL;
         $params = [$enrollmentId];
         $this->connection->executeQuery($query, $params);
-    }
-
-    /**
-     * @param Module[] $requiredModules
-     * @param ModuleStatusData[] $moduleStatuses
-     * @return int
-     */
-    private function calculateProgress(array $requiredModules, array $moduleStatuses): int
-    {
-        if (count($requiredModules) === 0) {
-            return 100;
-        }
-        $requiredModuleIds = array_map(fn($module) => $module->getId(), $requiredModules);
-        $requiredModuleStatuses = array_filter(
-            $moduleStatuses,
-            fn($status) => in_array($status->getModuleId(), $requiredModuleIds)
-        );
-        $totalProgress = array_sum(array_map(
-            fn($moduleStatus) => $moduleStatus->getProgress(),
-            $requiredModuleStatuses
-        ));
-
-        return intval(floor($totalProgress / count($requiredModules)));
     }
 }

@@ -197,15 +197,17 @@ class CourseService
         $this->synchronization->doWithTransaction(function () use ($params) {
             $enrollmentId = $params->getEnrollmentId();
             $moduleId = $params->getModuleId();
+
             $this->courseModuleRepository->setProgress($enrollmentId, $moduleId, $params->getProgress());
             $this->courseModuleRepository->increaseDuration($enrollmentId, $moduleId, $params->getSessionDuration());
+
             $courseId = $this->enrollmentRepository->getCourseIdByEnrollmentId($enrollmentId);
             $course = $this->getCourse($courseId);
             $courseStatus = $this->getCourseStatusData(new GetCourseStatusParams(
                 $enrollmentId,
                 $courseId
             ));
-            $this->courseRepository->recalculateStatus($enrollmentId, $course, $courseStatus);
+            $this->courseStatusTable->recalculate($enrollmentId, $course, $courseStatus);
         });
     }
 
