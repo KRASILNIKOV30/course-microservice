@@ -22,6 +22,9 @@ class ModuleStatus
     #[ORM\Column(type: 'integer')]
     private int $duration;
 
+    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable')]
+    private ?\DateTimeImmutable $deletedAt = null;
+
     public function __construct(
         string $module_id,
         string $enrollment_id,
@@ -32,6 +35,19 @@ class ModuleStatus
         $this->enrollment_id = $enrollment_id;
         $this->progress = $progress;
         $this->duration = $duration;
+    }
+
+    public function delete(): void
+    {
+        $this->deletedAt = new \DateTimeImmutable();
+    }
+
+    /**
+     * @return \DateTimeImmutable|null
+     */
+    public function getDeletedAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedAt;
     }
 
     public function edit(int $progress, int $sessionDuration): void

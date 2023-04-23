@@ -15,10 +15,26 @@ class Enrollment
     #[ORM\Column(type: 'string')]
     private string $course_id;
 
+    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable')]
+    private ?\DateTimeImmutable $deletedAt = null;
+
     public function __construct($enrollment_id, $course_id)
     {
         $this->enrollment_id = $enrollment_id;
         $this->course_id = $course_id;
+    }
+
+    public function delete(): void
+    {
+        $this->deletedAt = new \DateTimeImmutable();
+    }
+
+    /**
+     * @return \DateTimeImmutable|null
+     */
+    public function getDeletedAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedAt;
     }
 
     public function getId(): string

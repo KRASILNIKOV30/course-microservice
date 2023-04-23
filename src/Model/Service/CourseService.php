@@ -65,6 +65,20 @@ class CourseService
     }
 
     /**
+     * @param string $id
+     * @return Enrollment
+     * @throws EnrollmentNotFoundException
+     */
+    private function getEnrollment(string $id): Enrollment
+    {
+        $enrollment = $this->enrollmentRepository->findOne($id);
+        if ($enrollment === null) {
+            throw new EnrollmentNotFoundException("Cannot find enrollment with id $id");
+        }
+        return $enrollment;
+    }
+
+    /**
      * @param string $enrollmentId
      * @return CourseStatus
      * @throws Exception
@@ -218,7 +232,8 @@ class CourseService
             $moduleStatus->edit($params->getProgress(), $params->getSessionDuration());
             $this->moduleStatusTable->flush();
 
-            $courseId = $this->enrollmentRepository->getCourseIdByEnrollmentId($enrollmentId);
+            $enrollment = $this->getEnrollment($enrollmentId);
+            $courseId = $enrollment->getCourseId();
             $course = $this->getCourse($courseId);
             $courseStatus = $this->getCourseStatusData(new GetCourseStatusParams(
                 $enrollmentId,
@@ -236,20 +251,24 @@ class CourseService
     public function deleteCourse(string $courseId): void
     {
         $this->synchronization->doWithTransaction(function () use ($courseId) {
-            $enrollmentIds = $this->enrollmentRepository->listCourseEnrollmentIds($courseId);
+            $enrollments = $this->enrollmentRepository->findAll($courseId);
             $course = $this->getCourse($courseId);
-            $moduleIds = array_map(fn($module) => $module->getId(), $course->getModules());
-            foreach ($moduleIds as $moduleId) {
-                foreach ($enrollmentIds as $enrollmentId) {
-                    $this->courseModuleRepository->deleteStatus($enrollmentId, $moduleId);
+            $modules = $course->getModules();
+
+            foreach ($enrollments as $enrollment) {
+                foreach ($modules as $module) {
+                    $moduleStatus = $this->moduleStatusTable->findOne($module->getId(), $enrollment->getId());
+                    $moduleStatus->delete();
                 }
-                $this->courseModuleRepository->delete($moduleId);
+                $courseStatus = $this->courseStatusTable->findOne($enrollment->getId());
+                $courseStatus->delete();
+                $enrollment->delete();
             }
-            foreach ($enrollmentIds as $enrollmentId) {
-                $this->courseRepository->deleteStatus($enrollmentId);
+            foreach ($modules as $module) {
+                $module->delete();
             }
-            $this->enrollmentRepository->deleteCourseEnrollments($courseId);
-            $this->courseRepository->delete($courseId);
+            $course->delete();
+            $this->courseRepository->flush();
         });
     }
 

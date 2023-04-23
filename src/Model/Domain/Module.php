@@ -22,11 +22,27 @@ class Module
     #[ORM\Column(type: 'boolean', unique: false, nullable: false)]
     private bool $is_required;
 
+    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable')]
+    private ?\DateTimeImmutable $deletedAt = null;
+
     public function __construct($module_id, $is_required, $course_id)
     {
         $this->module_id = $module_id;
         $this->is_required = $is_required;
         $this->course = $course_id;
+    }
+
+    public function delete(): void
+    {
+        $this->deletedAt = new \DateTimeImmutable();
+    }
+
+    /**
+     * @return \DateTimeImmutable|null
+     */
+    public function getDeletedAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedAt;
     }
 
     public function getId(): string

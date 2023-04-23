@@ -19,6 +19,9 @@ class Course
     #[ORM\OneToMany(mappedBy: 'course', targetEntity: Module::class, cascade: ['persist'])]
     private Collection $modules;
 
+    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable')]
+    private ?\DateTimeImmutable $deletedAt = null;
+
     /**
      * @param string $course_id
      */
@@ -28,9 +31,22 @@ class Course
         $this->modules = new ArrayCollection();
     }
 
+    public function delete(): void
+    {
+        $this->deletedAt = new \DateTimeImmutable();
+    }
+
     public function getId(): string
     {
         return $this->course_id;
+    }
+
+    /**
+     * @return \DateTimeImmutable|null
+     */
+    public function getDeletedAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedAt;
     }
 
     /**

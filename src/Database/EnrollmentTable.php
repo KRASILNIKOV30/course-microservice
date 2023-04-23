@@ -6,11 +6,13 @@ use App\Model\Domain\Enrollment;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 
 class EnrollmentTable
 {
     private Connection $connection;
     private EntityManagerInterface $entityManager;
+    private EntityRepository $repository;
 
     public function __construct(
         Connection $connection,
@@ -18,6 +20,7 @@ class EnrollmentTable
     ) {
         $this->connection = $connection;
         $this->entityManager = $entityManager;
+        $this->repository = $entityManager->getRepository(Enrollment::class);
     }
 
     public function add(Enrollment $enrollment): void
@@ -30,36 +33,18 @@ class EnrollmentTable
         $this->entityManager->flush();
     }
 
-    public function getCourseIdByEnrollmentId(string $enrollmentId): string
+    public function findOne(string $id)
     {
-        $query = <<<SQL
-            SELECT
-                course_id
-            FROM course_enrollment
-            WHERE enrollment_id = ?
-            SQL;
-
-        $params = [$enrollmentId];
-        $stmt = $this->connection->executeQuery($query, $params);
-        return (string)$stmt->fetch(\PDO::FETCH_ASSOC)['course_id'];
+        return $this->repository->find($id);
     }
 
     /**
      * @param string $courseId
-     * @return string[]
+     * @return Enrollment[]
      */
-    public function listCourseEnrollmentIds(string $courseId): array
+    public function findAll(string $courseId): array
     {
-        $query = <<<SQL
-            SELECT
-                enrollment_id
-            FROM course_enrollment
-            WHERE course_id = ?
-            SQL;
-        $params = [$courseId];
-        $stmt = $this->connection->executeQuery($query, $params);
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        return array_map(fn($row) => $row['enrollment_id'], $rows);
+        return $this->repository->findBy(["course_id" => $courseId]);
     }
 
     /**
