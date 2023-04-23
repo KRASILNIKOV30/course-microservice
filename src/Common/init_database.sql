@@ -71,21 +71,22 @@ CREATE TABLE IF NOT EXISTS `course`.`course_status_all` (
 CREATE TABLE IF NOT EXISTS `course`.`course_material_all` (
     `module_id` VARCHAR(36) NOT NULL,
     `course_id` VARCHAR(36) NOT NULL,
-    `is_required` TINYINT NOT NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NULL DEFAULT NULL,
     `deleted_at` DATETIME NULL DEFAULT NULL,
     PRIMARY KEY (`module_id`),
     INDEX `fk_course_material_2_idx` (`course_id` ASC) VISIBLE,
-    UNIQUE INDEX `index3` (`module_id` ASC) VISIBLE,
-    CONSTRAINT `fk_course_material_2`
+    UNIQUE INDEX `index3` (`module_id` ASC) VISIBLE)
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = ascii;
+    
+ALTER TABLE course_material_all
+	ADD COLUMN is_required TINYINT NOT NULL AFTER course_id,
+    ADD CONSTRAINT `fk_course_material_2`
     FOREIGN KEY (`course_id`)
     REFERENCES `course`.`course_all` (`course_id`)
     ON DELETE RESTRICT
-    ON UPDATE RESTRICT)
-    ENGINE = InnoDB
-    DEFAULT CHARACTER SET = ascii;
-
+    ON UPDATE RESTRICT;
 
 -- -----------------------------------------------------
 -- Table `course`.`course_module_status`
@@ -94,22 +95,21 @@ CREATE TABLE IF NOT EXISTS `course`.`course_module_status_all` (
     `enrollment_id` VARCHAR(36) NOT NULL,
     `module_id` VARCHAR(36) NOT NULL,
     `progress` DECIMAL(3,0) NOT NULL,
-    `duration` INT NULL DEFAULT NULL,
     `deleted_at` DATETIME NULL DEFAULT NULL,
     PRIMARY KEY (`enrollment_id`, `module_id`),
-    UNIQUE INDEX `name_UNIQUE_2` (`module_id` ASC) VISIBLE,
-    UNIQUE INDEX `name_UNIQUE_3` (`module_id` ASC) VISIBLE,
     CONSTRAINT `fk_course_module_status_1`
     FOREIGN KEY (`module_id`)
-    REFERENCES `course`.`course_material_all` (`module_id`),
-    CONSTRAINT `fk_course_module_status_2`
-    FOREIGN KEY (`enrollment_id`)
-    REFERENCES `course`.`course_enrollment_all` (`enrollment_id`)
+    REFERENCES `course`.`course_material_all` (`module_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
     ENGINE = InnoDB
     DEFAULT CHARACTER SET = ascii;
     
+ALTER TABLE course_module_status_all 
+	ADD COLUMN duration INT NULL DEFAULT NULL AFTER progress,
+    ADD CONSTRAINT `fk_course_module_status_2`
+    FOREIGN KEY (`enrollment_id`)
+    REFERENCES `course`.`course_enrollment_all` (`enrollment_id`); 
 
 DROP VIEW course;
 DROP VIEW course_status;
