@@ -36,25 +36,6 @@ class CourseModuleTable
     }
 
     /**
-     * @param string $moduleId
-     * @param string $enrollmentId
-     * @return void
-     * @throws Exception
-     */
-    public function enroll(string $moduleId, string $enrollmentId): void
-    {
-        $query = <<<SQL
-            INSERT INTO course_module_status
-                (enrollment_id, module_id, progress, duration)
-            VALUES
-                (?, ?, 0, 0)
-            SQL;
-
-        $params = [$enrollmentId, $moduleId];
-        $this->connection->executeQuery($query, $params);
-    }
-
-    /**
      * @param string $enrollmentId
      * @param string $moduleId
      * @return int|null

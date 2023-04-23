@@ -132,23 +132,19 @@ class CourseService
     public function getCourseStatusData(GetCourseStatusParams $params): CourseStatusData
     {
         $enrollmentId = $params->getEnrollmentId();
-        $courseId = $params->getCourseId();
-
-        $course = $this->getCourse($courseId);
-        $modules = $course->getModules();
-
-        $moduleStatuses = [];
-        foreach ($modules as $module) {
-            $moduleStatuses[] = new ModuleStatusData(
-                $module->getId(),
-                $this->getModuleProgress($enrollmentId, $module->getId()),
-                $this->getModuleDuration($enrollmentId, $module->getId())
+        $moduleStatuses = $this->moduleStatusTable->findAll($enrollmentId);
+        $moduleStatusesData = [];
+        foreach ($moduleStatuses as $moduleStatus) {
+            $moduleStatusesData[] = new ModuleStatusData(
+                $moduleStatus->getModuleId(),
+                $moduleStatus->getProgress(),
+                $moduleStatus->getDuration()
             );
         }
         $courseStatus = $this->getCourseStatus($enrollmentId);
         return new CourseStatusData(
             $enrollmentId,
-            $moduleStatuses,
+            $moduleStatusesData,
             $courseStatus->getProgress(),
             $courseStatus->getDuration()
         );

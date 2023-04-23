@@ -17,6 +17,15 @@ class ModuleStatusTable
         $this->repository = $entityManager->getRepository(ModuleStatus::class);
     }
 
+    /**
+     * @param string $enrollmentId
+     * @return ModuleStatus[]
+     */
+    public function findAll(string $enrollmentId): array
+    {
+        return $this->repository->findBy(['enrollment_id' => $enrollmentId]);
+    }
+
     public function findOne(string $moduleId, string $enrollmentId): ?ModuleStatus
     {
         return $this->repository->findOneBy(['module_id' => $moduleId, 'enrollment_id' => $enrollmentId]);
