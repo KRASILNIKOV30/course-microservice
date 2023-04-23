@@ -49,10 +49,7 @@ final class ServiceProvider
     private function getCourseRepository(): CourseTable
     {
         if ($this->courseRepository === null) {
-            $this->courseRepository = new CourseTable(
-                DoctrineProvider::getConnection(),
-                DoctrineProvider::getEntityManager()
-            );
+            $this->courseRepository = new CourseTable(DoctrineProvider::getEntityManager());
         }
         return $this->courseRepository;
     }
@@ -60,10 +57,7 @@ final class ServiceProvider
     private function getEnrollmentRepository(): EnrollmentTable
     {
         if ($this->enrollmentRepository === null) {
-            $this->enrollmentRepository = new EnrollmentTable(
-                DoctrineProvider::getConnection(),
-                DoctrineProvider::getEntityManager()
-            );
+            $this->enrollmentRepository = new EnrollmentTable(DoctrineProvider::getEntityManager());
         }
         return $this->enrollmentRepository;
     }
@@ -71,10 +65,7 @@ final class ServiceProvider
     private function getCourseModuleRepository(): CourseModuleTable
     {
         if ($this->courseModuleRepository === null) {
-            $this->courseModuleRepository = new CourseModuleTable(
-                DoctrineProvider::getConnection(),
-                DoctrineProvider::getEntityManager()
-            );
+            $this->courseModuleRepository = new CourseModuleTable(DoctrineProvider::getEntityManager());
         }
         return $this->courseModuleRepository;
     }
@@ -82,9 +73,7 @@ final class ServiceProvider
     private function getCourseStatusTable(): CourseStatusTable
     {
         if ($this->courseStatusTable === null) {
-            $this->courseStatusTable = new CourseStatusTable(
-                DoctrineProvider::getEntityManager()
-            );
+            $this->courseStatusTable = new CourseStatusTable(DoctrineProvider::getEntityManager());
         }
         return $this->courseStatusTable;
     }
@@ -92,9 +81,7 @@ final class ServiceProvider
     private function getModuleStatusTable(): ModuleStatusTable
     {
         if ($this->moduleStatusTable === null) {
-            $this->moduleStatusTable = new ModuleStatusTable(
-                DoctrineProvider::getEntityManager()
-            );
+            $this->moduleStatusTable = new ModuleStatusTable(DoctrineProvider::getEntityManager());
         }
         return $this->moduleStatusTable;
     }

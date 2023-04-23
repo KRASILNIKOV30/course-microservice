@@ -3,7 +3,6 @@
 namespace App\Database;
 
 use App\Model\Domain\ModuleStatus;
-use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 

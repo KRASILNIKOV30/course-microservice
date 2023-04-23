@@ -267,36 +267,4 @@ class CourseService
             $this->courseRepository->flush();
         });
     }
-
-    /**
-     * @param string $enrollmentId
-     * @param string $moduleId
-     * @return int
-     * @throws ModuleStatusNotFoundException|\Doctrine\DBAL\Exception
-     */
-    private function getModuleProgress(string $enrollmentId, string $moduleId): int
-    {
-        $progress = $this->courseModuleRepository->getProgress($enrollmentId, $moduleId);
-        if ($progress === null) {
-            $message = "Cannot find module status with enrollmentId $enrollmentId and moduleId $moduleId";
-            throw new ModuleStatusNotFoundException($message);
-        }
-        return $progress;
-    }
-
-    /**
-     * @param string $enrollmentId
-     * @param string $moduleId
-     * @return int
-     * @throws ModuleStatusNotFoundException|\Doctrine\DBAL\Exception
-     */
-    private function getModuleDuration(string $enrollmentId, string $moduleId): int
-    {
-        $duration = $this->courseModuleRepository->getDuration($enrollmentId, $moduleId);
-        if ($duration === null) {
-            $message = "Cannot find module status with enrollmentId $enrollmentId and moduleId $moduleId";
-            throw new ModuleStatusNotFoundException($message);
-        }
-        return $duration;
-    }
 }
