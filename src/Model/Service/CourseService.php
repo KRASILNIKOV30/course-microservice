@@ -235,8 +235,51 @@ class CourseService
                 $enrollmentId,
                 $courseId
             ));
-            $this->courseStatusRepository->recalculate($enrollmentId, $course, $courseStatus);
+            $this->recalculate($enrollmentId, $course, $courseStatus);
         });
+    }
+
+    //TODO: Убрать бизнес логику из репозитория
+    /**
+     * @param string $enrollmentId
+     * @param Course $course
+     * @param CourseStatusData $courseStatusData
+     * @return void
+     */
+    public function recalculate(string $enrollmentId, Course $course, CourseStatusData $courseStatusData): void
+    {
+        $modules = $course->getModules();
+        $requiredModules = array_filter($modules, fn($module) => $module->isRequired());
+        $moduleStatuses = $courseStatusData->getModules();
+        $progress = $this->calculateProgress($requiredModules, $moduleStatuses);
+        $duration = array_sum(array_map(fn($module) => $module->getDuration(), $moduleStatuses));
+
+        $courseStatus = $this->courseStatusRepository->findOne($enrollmentId);
+        $courseStatus?->edit($progress, $duration);
+        $this->courseStatusRepository->flush();
+    }
+
+    /**
+     * @param Module[] $requiredModules
+     * @param ModuleStatusData[] $moduleStatuses
+     * @return int
+     */
+    private function calculateProgress(array $requiredModules, array $moduleStatuses): int
+    {
+        if (count($requiredModules) === 0) {
+            return 100;
+        }
+        $requiredModuleIds = array_map(fn($module) => $module->getId(), $requiredModules);
+        $requiredModuleStatuses = array_filter(
+            $moduleStatuses,
+            fn($status) => in_array($status->getModuleId(), $requiredModuleIds)
+        );
+        $totalProgress = array_sum(array_map(
+            fn($moduleStatus) => $moduleStatus->getProgress(),
+            $requiredModuleStatuses
+        ));
+
+        return intval(floor($totalProgress / count($requiredModules)));
     }
 
     /**
