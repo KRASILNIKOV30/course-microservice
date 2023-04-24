@@ -6,7 +6,7 @@ use App\Model\Domain\ModuleStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
-class ModuleStatusTable
+class ModuleStatusRepository
 {
     private EntityManagerInterface $entityManager;
     private EntityRepository $repository;

@@ -6,7 +6,7 @@ use App\Model\Domain\Course;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
-class CourseTable
+class CourseRepository
 {
     private EntityManagerInterface $entityManager;
     private EntityRepository $repository;

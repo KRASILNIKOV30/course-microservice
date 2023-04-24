@@ -3,11 +3,11 @@
 namespace App\Model\Service;
 
 use App\Common\Doctrine\Synchronization;
-use App\Database\CourseModuleTable;
-use App\Database\CourseStatusTable;
-use App\Database\CourseTable;
-use App\Database\EnrollmentTable;
-use App\Database\ModuleStatusTable;
+use App\Database\CourseModuleRepository;
+use App\Database\CourseStatusRepository;
+use App\Database\CourseRepository;
+use App\Database\EnrollmentRepository;
+use App\Database\ModuleStatusRepository;
 use App\Model\Domain\Course;
 use App\Model\Data\CourseStatusData;
 use App\Model\Data\GetCourseStatusParams;
@@ -28,26 +28,26 @@ use Throwable;
 class CourseService
 {
     private Synchronization $synchronization;
-    private CourseTable $courseRepository;
-    private EnrollmentTable $enrollmentRepository;
-    private CourseModuleTable $courseModuleRepository;
-    private CourseStatusTable $courseStatusTable;
-    private ModuleStatusTable $moduleStatusTable;
+    private CourseRepository $courseRepository;
+    private EnrollmentRepository $enrollmentRepository;
+    private CourseModuleRepository $courseModuleRepository;
+    private CourseStatusRepository $courseStatusRepository;
+    private ModuleStatusRepository $moduleStatusRepository;
 
     public function __construct(
         Synchronization $synchronization,
-        CourseTable $courseRepository,
-        EnrollmentTable $enrollmentRepository,
-        CourseModuleTable $courseModuleRepository,
-        CourseStatusTable $courseStatusTable,
-        ModuleStatusTable $moduleStatusTable
+        CourseRepository $courseRepository,
+        EnrollmentRepository $enrollmentRepository,
+        CourseModuleRepository $courseModuleRepository,
+        CourseStatusRepository $courseStatusTable,
+        ModuleStatusRepository $moduleStatusTable
     ) {
         $this->synchronization = $synchronization;
         $this->courseRepository = $courseRepository;
         $this->enrollmentRepository = $enrollmentRepository;
         $this->courseModuleRepository = $courseModuleRepository;
-        $this->courseStatusTable = $courseStatusTable;
-        $this->moduleStatusTable = $moduleStatusTable;
+        $this->courseStatusRepository = $courseStatusTable;
+        $this->moduleStatusRepository = $moduleStatusTable;
     }
 
     /**
@@ -85,7 +85,7 @@ class CourseService
      */
     private function getCourseStatus(string $enrollmentId): CourseStatus
     {
-        $courseStatus = $this->courseStatusTable->findOne($enrollmentId);
+        $courseStatus = $this->courseStatusRepository->findOne($enrollmentId);
         if ($courseStatus === null) {
             throw new Exception("Cannot find course staus with enrollmentId $enrollmentId");
         }
@@ -112,7 +112,7 @@ class CourseService
      */
     public function getModuleStatus(string $moduleId, string $enrollmentId): ModuleStatus
     {
-        $moduleStatus = $this->moduleStatusTable->findOne($moduleId, $enrollmentId);
+        $moduleStatus = $this->moduleStatusRepository->findOne($moduleId, $enrollmentId);
         if ($moduleStatus === null) {
             $message = "Cannot find module status with module id $moduleId and enrollment id $enrollmentId";
             throw new ModuleStatusNotFoundException($message);
@@ -132,7 +132,7 @@ class CourseService
     public function getCourseStatusData(GetCourseStatusParams $params): CourseStatusData
     {
         $enrollmentId = $params->getEnrollmentId();
-        $moduleStatuses = $this->moduleStatusTable->findAll($enrollmentId);
+        $moduleStatuses = $this->moduleStatusRepository->findAll($enrollmentId);
         $moduleStatusesData = [];
         foreach ($moduleStatuses as $moduleStatus) {
             $moduleStatusesData[] = new ModuleStatusData(
@@ -191,8 +191,8 @@ class CourseService
             $progress = $this->getProgress($course);
 
             $courseStatus = new CourseStatus($params->getEnrollmentId(), $progress);
-            $this->courseStatusTable->add($courseStatus);
-            $this->courseStatusTable->flush();
+            $this->courseStatusRepository->add($courseStatus);
+            $this->courseStatusRepository->flush();
 
             $modules = $course->getModules();
             foreach ($modules as $module) {
@@ -200,9 +200,9 @@ class CourseService
                     $module->getId(),
                     $params->getEnrollmentId()
                 );
-                $this->moduleStatusTable->add($moduleStatus);
+                $this->moduleStatusRepository->add($moduleStatus);
             }
-            $this->moduleStatusTable->flush();
+            $this->moduleStatusRepository->flush();
         });
     }
 
@@ -226,7 +226,7 @@ class CourseService
 
             $moduleStatus = $this->getModuleStatus($moduleId, $enrollmentId);
             $moduleStatus->edit($params->getProgress(), $params->getSessionDuration());
-            $this->moduleStatusTable->flush();
+            $this->moduleStatusRepository->flush();
 
             $enrollment = $this->getEnrollment($enrollmentId);
             $courseId = $enrollment->getCourseId();
@@ -235,7 +235,7 @@ class CourseService
                 $enrollmentId,
                 $courseId
             ));
-            $this->courseStatusTable->recalculate($enrollmentId, $course, $courseStatus);
+            $this->courseStatusRepository->recalculate($enrollmentId, $course, $courseStatus);
         });
     }
 
@@ -253,10 +253,10 @@ class CourseService
 
             foreach ($enrollments as $enrollment) {
                 foreach ($modules as $module) {
-                    $moduleStatus = $this->moduleStatusTable->findOne($module->getId(), $enrollment->getId());
+                    $moduleStatus = $this->moduleStatusRepository->findOne($module->getId(), $enrollment->getId());
                     $moduleStatus->delete();
                 }
-                $courseStatus = $this->courseStatusTable->findOne($enrollment->getId());
+                $courseStatus = $this->courseStatusRepository->findOne($enrollment->getId());
                 $courseStatus->delete();
                 $enrollment->delete();
             }

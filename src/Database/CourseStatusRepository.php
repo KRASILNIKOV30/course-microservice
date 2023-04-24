@@ -10,7 +10,7 @@ use App\Model\Domain\Module;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
-class CourseStatusTable
+class CourseStatusRepository
 {
     private EntityRepository $repository;
     private EntityManagerInterface $entityManager;

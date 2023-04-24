@@ -6,7 +6,7 @@ use App\Model\Domain\Enrollment;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
-class EnrollmentTable
+class EnrollmentRepository
 {
     private EntityManagerInterface $entityManager;
     private EntityRepository $repository;

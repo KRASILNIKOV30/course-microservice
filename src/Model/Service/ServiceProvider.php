@@ -6,20 +6,20 @@ namespace App\Model\Service;
 
 use App\Common\Doctrine\DoctrineProvider;
 use App\Common\Doctrine\Synchronization;
-use App\Database\CourseModuleTable;
-use App\Database\CourseStatusTable;
-use App\Database\CourseTable;
-use App\Database\EnrollmentTable;
-use App\Database\ModuleStatusTable;
+use App\Database\CourseModuleRepository;
+use App\Database\CourseStatusRepository;
+use App\Database\CourseRepository;
+use App\Database\EnrollmentRepository;
+use App\Database\ModuleStatusRepository;
 
 final class ServiceProvider
 {
     private ?CourseService $courseService = null;
-    private ?CourseTable $courseRepository = null;
-    private ?EnrollmentTable $enrollmentRepository = null;
-    private ?CourseModuleTable $courseModuleRepository = null;
-    private ?CourseStatusTable $courseStatusTable = null;
-    private ?ModuleStatusTable $moduleStatusTable = null;
+    private ?CourseRepository $courseRepository = null;
+    private ?EnrollmentRepository $enrollmentRepository = null;
+    private ?CourseModuleRepository $courseModuleRepository = null;
+    private ?CourseStatusRepository $courseStatusTable = null;
+    private ?ModuleStatusRepository $moduleStatusTable = null;
 
     public static function getInstance(): self
     {
@@ -46,42 +46,42 @@ final class ServiceProvider
         return $this->courseService;
     }
 
-    private function getCourseRepository(): CourseTable
+    private function getCourseRepository(): CourseRepository
     {
         if ($this->courseRepository === null) {
-            $this->courseRepository = new CourseTable(DoctrineProvider::getEntityManager());
+            $this->courseRepository = new CourseRepository(DoctrineProvider::getEntityManager());
         }
         return $this->courseRepository;
     }
 
-    private function getEnrollmentRepository(): EnrollmentTable
+    private function getEnrollmentRepository(): EnrollmentRepository
     {
         if ($this->enrollmentRepository === null) {
-            $this->enrollmentRepository = new EnrollmentTable(DoctrineProvider::getEntityManager());
+            $this->enrollmentRepository = new EnrollmentRepository(DoctrineProvider::getEntityManager());
         }
         return $this->enrollmentRepository;
     }
 
-    private function getCourseModuleRepository(): CourseModuleTable
+    private function getCourseModuleRepository(): CourseModuleRepository
     {
         if ($this->courseModuleRepository === null) {
-            $this->courseModuleRepository = new CourseModuleTable(DoctrineProvider::getEntityManager());
+            $this->courseModuleRepository = new CourseModuleRepository(DoctrineProvider::getEntityManager());
         }
         return $this->courseModuleRepository;
     }
 
-    private function getCourseStatusTable(): CourseStatusTable
+    private function getCourseStatusTable(): CourseStatusRepository
     {
         if ($this->courseStatusTable === null) {
-            $this->courseStatusTable = new CourseStatusTable(DoctrineProvider::getEntityManager());
+            $this->courseStatusTable = new CourseStatusRepository(DoctrineProvider::getEntityManager());
         }
         return $this->courseStatusTable;
     }
 
-    private function getModuleStatusTable(): ModuleStatusTable
+    private function getModuleStatusTable(): ModuleStatusRepository
     {
         if ($this->moduleStatusTable === null) {
-            $this->moduleStatusTable = new ModuleStatusTable(DoctrineProvider::getEntityManager());
+            $this->moduleStatusTable = new ModuleStatusRepository(DoctrineProvider::getEntityManager());
         }
         return $this->moduleStatusTable;
     }
